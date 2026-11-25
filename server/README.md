@@ -1,0 +1,27 @@
+# Local RDMS backend
+
+Node 24+ (built-in `node:sqlite`), Express and multer. From the repository root, `npm start` serves the API on `127.0.0.1:3001` and the built `dist/` SPA. `PORT` overrides the port; `RDMS_DATA_DIR` overrides the default private `data/` directory. Vite proxies `/api` during development. Do not expose this demo to an untrusted network or upload confidential research.
+
+SQLite and PDF files persist beneath `data/`. Foreign keys and WAL are enabled. Tables store domain JSON with relational owner/project/document/recipient foreign keys. Review records and audit entries have database-enforced update/delete protection. A synchronous transaction saves each command; multipart commands refresh authorization and stored state after asynchronous parsing. There are no public upload-storage routes.
+
+## Frontend contract
+
+- `GET /api/session`: `{user:null|user,demoUsers:[{id,name,role,department,status}],demo:true}`. `POST /api/session {userId}` returns `{user,demo:true}` and sets an HttpOnly, SameSite=Strict cookie. `DELETE /api/session` returns `{user:null,demo:true}`. Requests must use same-origin cookies. Pending/inactive accounts cannot log in.
+- `GET /api/bootstrap`: `{user,users,projects,documents,notifications,announcements,audit,departments,programs,checklist,types,settings}`. Arrays and metadata are authorized server-side. `departments` and `types` are string arrays; `programs` entries are `{id,name,department}`. Checklist and requirement IDs are stable, exported by `shared/catalog.js`. Phase indexes are 0–2. Conditional exclusions use `Not Applicable` and `feedback` containing their reason.
+- All requested project, upload, review, applicability, archive, user, announcement, notification, settings, CSV and assistant routes are implemented. Creation returns HTTP 201 and the created entity; updates/actions return the updated entity. Notification read returns `{ok:true}`. Errors always return `{error}`. Review metadata also appears as `document.review`; original upload signature remains `document.signature`. Superseded documents preserve immutable review metadata and file bytes.
+- Upload: multipart `file`, `requirementId`, `signature`, optional `reason` (required for Head uploads). Include `submissionKey` to make retries idempotent; the UI retains a UUID for an upload attempt. Key reuse with different bytes/metadata fails, while identical retries return the existing document, including after approval. SQLite enforces key uniqueness. Legacy unkeyed requests intentionally create new versions. File must have `.pdf` extension, `%PDF-` magic, `%%EOF`, and fit both the hard 10 MiB cap and configurable lower limit. Files are private; preview with `/api/documents/:id/file`. Signature is a typed demo attestation, not a cryptographic certificate. Metadata is server-created; payload roles, statuses, phases and uploader identities are not trusted.
+- Only in-department Heads may review, advance, waive conditionals or upload on behalf of faculty. Admin and Director have university-wide visibility and completed-project archiving, but no review, advancement or upload authority. Only Admin manages accounts/settings. Researchers cannot create a second ongoing project. Announcements accept plain text only, not HTML.
+- `settings.uploadLimit` is in MiB, 1–10. `settings.monitoring` preserves the image's cross-lifecycle monitoring/evaluation text. Personally funded research uses the explicitly provisional shared checklist. All checkbox lines, including Completed Research Paper children and Quality and Originality Checks, are represented as individually gated items; the repeated E labels are preserved.
+- CSV filters: `q,type,department,status,year,report`; all 13 report models are shared with the frontend. Report authorization is applied before filters, formula-leading cells are escaped, and exports are audited. `POST /api/reports/print {report,filters}` audits a printable-report request. Assistant answers are deterministic advisory summaries of scoped metadata, never approvals or PDF analysis.
+
+## Demo identities and fixtures
+
+`admin`, `director`, `head-1` through `head-7`, `researcher-1` through `researcher-16`, and inactive `pending`. Researcher 1 is Maya Dela Cruz, College of Technology: `project-1` has a signed revision request on `call-2` and pending `call-3`. Heads follow the shared departments array order. Twenty synthetic projects cover all types, departments and phases, plus completed/archived records. Every seeded PDF explicitly says it is synthetic; bootstrap settings label the entire dataset. New user uploads are marked `synthetic:false`.
+
+Google OAuth, SMTP delivery, malware scanning, official branding and the official personally funded variant are not configured or simulated. In-app notifications are real local records; there is no claim of sent email. Account status changes apply on the next request even to existing sessions. Pending review/revision notifications resolve from authoritative document/version state, independently of their read flag.
+
+## Tests and embedding
+
+`node --test tests/backend.test.js`
+
+`import {createApp} from './server/index.js'`; `createApp({dataDir})` returns an Express app without listening. Use `app.locals.close()` after closing the HTTP server. `app.locals.store` is available for local integrity tests. `server/store.js` exports `syntheticPdf()` for valid dependency-free test fixtures. Only direct execution of `server/index.js` starts a listener.

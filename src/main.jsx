@@ -1,0 +1,2942 @@
+import React, { useState, useEffect, useId } from "react";
+import { createRoot } from "react-dom/client";
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Files,
+  ClipboardCheck,
+  Archive,
+  Users,
+  ChartNoAxesCombined,
+  Newspaper,
+  Sparkles,
+  ShieldCheck,
+  Settings,
+  Bell,
+  Search,
+  Plus,
+  ArrowUpRight,
+  ChevronRight,
+  ChevronDown,
+  Check,
+  Clock,
+  Download,
+  Upload,
+  FileText,
+  LogOut,
+  Menu,
+  X,
+  Activity,
+  AlertCircle,
+  CheckCircle2,
+  Building2,
+  ArrowRight,
+  Filter,
+} from "lucide-react";
+import "./styles.css";
+import { buildReport, reportNames } from "../shared/reporting.js";
+
+async function api(path, method = "GET", body) {
+  const r = await fetch("/api" + path, {
+    method,
+    headers:
+      body instanceof FormData
+        ? {}
+        : body
+          ? { "Content-Type": "application/json" }
+          : {},
+    body:
+      body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) {
+    const v = await r.json().catch(() => ({ error: r.statusText }));
+    throw new Error(v.error || "Request failed");
+  }
+  return r.status === 204 ? null : r.json();
+}
+const shortType = (t) =>
+  t
+    ?.replace(" Research Project", "")
+    .replace("Equivalent Teaching", "Equivalent Teaching (ETL)")
+    .replace(" (ETL) (ETL)", " (ETL)");
+const initials = (n) =>
+  n
+    ?.split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0])
+    .join("") || "RD";
+const date = (d) =>
+  d
+    ? new Date(d).toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "—";
+const time = (d) =>
+  d
+    ? new Date(d).toLocaleTimeString("en-PH", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
+const cls = (s) => s?.toLowerCase().replaceAll(" ", "-") || "missing";
+function Badge({ children }) {
+  return <span className={"badge " + cls(String(children))}>{children}</span>;
+}
+function Empty({
+  title = "Nothing here yet",
+  text = "Items will appear here as research progresses.",
+}) {
+  return (
+    <div className="empty">
+      <FolderKanban size={30} />
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </div>
+  );
+}
+function Field({ label, children, hint }) {
+  const generatedId = useId();
+  const id = children.props.id || generatedId;
+  return (
+    <div className="field">
+      <label htmlFor={id} id={id + "-label"}>
+        {label}
+      </label>
+      {React.cloneElement(children, {
+        id,
+        "aria-labelledby": id + "-label",
+        "aria-describedby": hint ? id + "-hint" : undefined,
+      })}
+      {hint && <small id={id + "-hint"}>{hint}</small>}
+    </div>
+  );
+}
+function Progress({ project, checklist }) {
+  const items = checklist.flatMap((p) => p.groups.flatMap((g) => g.items));
+  let done = items.filter((i) =>
+    ["Approved", "Not Applicable"].includes(
+      project.requirements?.[i.id]?.status,
+    ),
+  ).length;
+  return (
+    <div className="progress-line">
+      <div className="progress">
+        <i style={{ width: Math.round((done / items.length) * 100) + "%" }} />
+      </div>
+      <span>{Math.round((done / items.length) * 100)}%</span>
+    </div>
+  );
+}
+const navGroups = [
+  {
+    items: [
+      ["Overview", LayoutDashboard],
+      ["Pending actions", ClipboardCheck],
+      ["Notifications", Bell],
+    ],
+  },
+  {
+    title: "Research workspace",
+    items: [
+      ["Research projects", FolderKanban],
+      ["Document submissions", Files],
+      ["Review & approvals", ShieldCheck],
+      ["Research archive", Archive],
+      ["Faculty profiles", Users],
+    ],
+  },
+  {
+    title: "Insights & community",
+    items: [
+      ["Reports & analytics", ChartNoAxesCombined],
+      ["News & announcements", Newspaper],
+      ["Research assistant", Sparkles],
+    ],
+  },
+  {
+    title: "Administration",
+    admin: true,
+    items: [
+      ["User management", Users],
+      ["Roles & permissions", ShieldCheck],
+      ["Audit history", Activity],
+      ["System settings", Settings],
+    ],
+  },
+];
+function ProjectFields({ data, user }) {
+  const [dept, setDept] = useState(user.department || data.departments[0]);
+  const researcher = user.role === "Researcher";
+  return (
+    <>
+      <div className="form-grid">
+        <Field label="Research project type">
+          <select name="type" required>
+            {data.types.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Academic year">
+          <input
+            name="year"
+            type="number"
+            min="2000"
+            max="2100"
+            defaultValue={2026}
+            required
+          />
+        </Field>
+        <Field label="College department">
+          <select
+            name="department"
+            value={dept}
+            onChange={(e) => setDept(e.target.value)}
+            required
+          >
+            {data.departments
+              .filter(
+                (d) =>
+                  !["Researcher", "Department Head"].includes(user.role) ||
+                  d === user.department,
+              )
+              .map((d) => (
+                <option key={d}>{d}</option>
+              ))}
+          </select>
+        </Field>
+        <Field label="Academic program">
+          <select name="program" key={dept} required>
+            {data.programs
+              .filter((p) => p.department === dept)
+              .map((p) => (
+                <option key={p.id}>{p.name}</option>
+              ))}
+          </select>
+        </Field>
+      </div>
+      {!researcher && (
+        <Field label="Research owner">
+          <select name="ownerId" key={dept} required>
+            {data.users
+              .filter(
+                (u) =>
+                  u.role === "Researcher" &&
+                  u.status === "Active" &&
+                  u.department === dept,
+              )
+              .map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                  {data.projects.some(
+                    (p) => p.ownerId === u.id && p.status === "Ongoing",
+                  )
+                    ? " — ongoing study"
+                    : ""}
+                </option>
+              ))}
+          </select>
+        </Field>
+      )}
+    </>
+  );
+}
+function App() {
+  const [session, setSession] = useState(null),
+    [data, setData] = useState(null),
+    [page, setPage] = useState("Overview"),
+    [projectId, setProjectId] = useState(null),
+    [tab, setTab] = useState("Checklist"),
+    [phase, setPhase] = useState(null),
+    [q, setQ] = useState(""),
+    [type, setType] = useState(""),
+    [department, setDepartment] = useState(""),
+    [year, setYear] = useState(""),
+    [status, setStatus] = useState(""),
+    [modal, setModal] = useState(null),
+    [error, setError] = useState(""),
+    [toast, setToast] = useState(""),
+    [busy, setBusy] = useState(false),
+    [mobile, setMobile] = useState(false),
+    [smallScreen, setSmallScreen] = useState(
+      () => window.matchMedia("(max-width:760px)").matches,
+    ),
+    [report, setReport] = useState("Research Inventory"),
+    [answer, setAnswer] = useState(""),
+    [question, setQuestion] = useState("");
+  useEffect(() => {
+    api("/session")
+      .then((s) => {
+        setSession(s);
+        if (s.user) return load();
+      })
+      .catch((e) => setError(e.message));
+  }, []);
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(""), 4500);
+      return () => clearTimeout(t);
+    }
+  }, [toast]);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width:760px)");
+    const update = () => setSmallScreen(mq.matches);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  useEffect(() => {
+    if (!mobile) return;
+    document.querySelector(".sidebar button")?.focus();
+    const escape = (e) => {
+      if (e.key === "Escape") closeNav();
+    };
+    window.addEventListener("keydown", escape);
+    return () => window.removeEventListener("keydown", escape);
+  }, [mobile]);
+  function closeNav() {
+    setMobile(false);
+    document.querySelector(".mobile-menu")?.focus();
+  }
+  async function load() {
+    const d = await api("/bootstrap");
+    setData(d);
+    return d;
+  }
+  async function run(fn, message) {
+    setBusy(true);
+    setError("");
+    try {
+      await fn();
+      await load();
+      if (message) setToast(message);
+      return true;
+    } catch (e) {
+      setError(e.message);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function login(id) {
+    setBusy(true);
+    setError("");
+    try {
+      const s = await api("/session", "POST", { userId: id });
+      setSession({ ...session, ...s });
+      await load();
+      setPage("Overview");
+      setProjectId(null);
+      setQ("");
+      setType("");
+      setDepartment("");
+      setYear("");
+      setStatus("");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  function go(p) {
+    setPage(p);
+    setProjectId(null);
+    closeNav();
+    setQ("");
+    setStatus("");
+  }
+  function openProject(id) {
+    setProjectId(id);
+    setTab("Checklist");
+    setPhase(null);
+    closeNav();
+  }
+  const user = data?.user,
+    isAdmin = user?.role === "Super Admin",
+    isHead = user?.role === "Department Head",
+    isResearcher = user?.role === "Researcher",
+    isPublisher = isAdmin || user?.role === "Research Director";
+  const projects = data?.projects || [],
+    checklist = data?.checklist || [],
+    notifications = data?.notifications || [],
+    pendingDocs = (data?.documents || []).filter(
+      (d) => d.status === "Pending Review",
+    ),
+    revisionDocs = (data?.documents || []).filter((d) =>
+      ["Needs Revision", "Rejected"].includes(d.status),
+    );
+  const filtered = projects.filter(
+    (p) =>
+      (!q ||
+        [p.title, p.id, data.users?.find((u) => u.id === p.ownerId)?.name]
+          .join(" ")
+          .toLowerCase()
+          .includes(q.toLowerCase())) &&
+      (!type || p.type === type) &&
+      (!department || p.department === department) &&
+      (!year || String(p.year) === year) &&
+      (!status || p.status === status),
+  );
+  const project = projects.find((p) => p.id === projectId),
+    unread = notifications.filter((n) => !n.read).length;
+  const itemsFor = (p) => checklist[p]?.groups.flatMap((g) => g.items) || [];
+  const ready = (p) =>
+    itemsFor(p.phase).every((i) =>
+      ["Approved", "Not Applicable"].includes(p.requirements?.[i.id]?.status),
+    );
+  const years = [...new Set(projects.map((p) => String(p.year)))]
+    .sort()
+    .reverse();
+  function filterBar({ search = true } = {}) {
+    return (
+      <div className="filters">
+        {search && (
+          <div className="search">
+            <Search size={16} />
+            <input
+              aria-label="Search research"
+              placeholder="Search research or researcher…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </div>
+        )}
+        <select
+          aria-label="Academic year"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+        >
+          <option value="">All academic years</option>
+          {years.map((y) => (
+            <option key={y}>{y}</option>
+          ))}
+        </select>
+        <select
+          aria-label="Department"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+        >
+          <option value="">All departments</option>
+          {data.departments.map((d) => (
+            <option key={typeof d === "string" ? d : d.name}>
+              {typeof d === "string" ? d : d.name}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Research type"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
+          <option value="">All research types</option>
+          {data.types.map((t) => (
+            <option key={t} value={t}>
+              {shortType(t)}
+            </option>
+          ))}
+        </select>
+        {(q || type || department || year || status) && (
+          <button
+            className="text-button"
+            onClick={() => {
+              setQ("");
+              setType("");
+              setDepartment("");
+              setYear("");
+              setStatus("");
+            }}
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+    );
+  }
+  function header(title, desc, actions) {
+    return (
+      <div className="page-heading">
+        <div>
+          <h1>{title}</h1>
+          <p>{desc}</p>
+        </div>
+        <div className="heading-actions">{actions}</div>
+      </div>
+    );
+  }
+  function projectTable(list = filtered, compact = false) {
+    return list.length ? (
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Research project</th>
+              {!compact && <th>Researcher / Department</th>}
+              <th>Current phase</th>
+              <th>Progress</th>
+              <th>Status</th>
+              <th>
+                <span className="sr-only">Open</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((p) => (
+              <tr key={p.id}>
+                <td>
+                  <button
+                    className="project-link"
+                    onClick={() => openProject(p.id)}
+                  >
+                    {p.title}
+                  </button>
+                  <div className="cell-sub">
+                    <span
+                      className={"type-dot type-" + data.types.indexOf(p.type)}
+                    />
+                    {shortType(p.type)}
+                    <span className="muted"> · {p.id}</span>
+                  </div>
+                </td>
+                {!compact && (
+                  <td>
+                    <div>
+                      {data.users.find((u) => u.id === p.ownerId)?.name ||
+                        "Faculty researcher"}
+                    </div>
+                    <div className="cell-sub">{p.department}</div>
+                  </td>
+                )}
+                <td>
+                  <span className="phase-label">
+                    <span className="phase-num">{p.phase + 1}</span>
+                    {checklist[p.phase]?.name
+                      .replace(/^(I+\.|IV\.)\s*/, "")
+                      .replace(" PHASE", "")
+                      .replace("Phase", "")
+                      .toLowerCase()}
+                  </span>
+                </td>
+                <td>
+                  <Progress project={p} checklist={checklist} />
+                </td>
+                <td>
+                  <Badge>{p.status}</Badge>
+                </td>
+                <td>
+                  <button
+                    className="icon-button"
+                    aria-label={"Open " + p.title}
+                    onClick={() => openProject(p.id)}
+                  >
+                    <ChevronRight size={17} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <Empty
+        title="No matching research"
+        text="Try clearing filters or submit a new project."
+      />
+    );
+  }
+  function exportCsv() {
+    const params = new URLSearchParams({
+      q,
+      type,
+      department,
+      year,
+      status,
+      report: page === "Reports & analytics" ? report : "Research Inventory",
+    });
+    window.location.href = "/api/reports.csv?" + params;
+    setToast("CSV export requested. Your authorized filters are included.");
+  }
+  function renderOverview() {
+    const active = filtered.filter((p) => p.status === "Ongoing"),
+      completed = filtered.filter((p) => p.status === "Completed"),
+      scopedIds = new Set(filtered.map((p) => p.id)),
+      reviews = pendingDocs.filter((d) => scopedIds.has(d.projectId));
+    const byDept = data.departments
+      .map((d) => {
+        const name = typeof d === "string" ? d : d.name;
+        return {
+          name,
+          n: filtered.filter((p) => p.department === name).length,
+        };
+      })
+      .filter((d) => d.n);
+    return (
+      <>
+        {header(
+          isResearcher ? "Your research, in focus" : "Research overview",
+          isResearcher
+            ? "Your studies, requirements, and next steps in one place."
+            : "A clear view of research, from proposal to impact.",
+          <>
+            <button className="button secondary" onClick={exportCsv}>
+              <Download size={16} />
+              Export report
+            </button>
+            <button
+              className="button"
+              onClick={() =>
+                isResearcher
+                  ? setModal({ kind: "project" })
+                  : go("Research projects")
+              }
+            >
+              {isResearcher ? <Plus size={16} /> : <FolderKanban size={16} />}{" "}
+              {isResearcher ? "New research" : "View projects"}
+            </button>
+          </>,
+        )}
+        {filterBar({ search: false })}
+        <div className="metrics">
+          {[
+            [
+              "Total research",
+              filtered.length,
+              "Across five research types",
+              FolderKanban,
+            ],
+            ["Ongoing", active.length, "In the research lifecycle", Activity],
+            [
+              "Completed",
+              completed.length,
+              "Approved research outputs",
+              CheckCircle2,
+            ],
+            [
+              "Awaiting review",
+              reviews.length,
+              "Documents requiring attention",
+              Clock,
+            ],
+          ].map(([label, n, sub, Icon], i) => (
+            <button
+              className="metric"
+              key={label}
+              onClick={() => {
+                if (i === 3) go("Review & approvals");
+                else {
+                  go("Research projects");
+                  setStatus(i === 1 ? "Ongoing" : i === 2 ? "Completed" : "");
+                }
+              }}
+            >
+              <div className="metric-label">
+                {label}
+                <Icon size={18} />
+              </div>
+              <strong>{n}</strong>
+              <span>{sub}</span>
+            </button>
+          ))}
+        </div>
+        <div className="overview-grid">
+          <section className="panel focus-panel">
+            <div className="section-heading">
+              <h2>Research in focus</h2>
+              <button
+                className="text-button"
+                onClick={() => go("Research projects")}
+              >
+                View all <ArrowRight size={14} />
+              </button>
+            </div>
+            {filtered
+              .filter((p) => p.status === "Ongoing")
+              .slice(0, 4)
+              .map((p) => (
+                <button
+                  className="focus-project"
+                  key={p.id}
+                  onClick={() => openProject(p.id)}
+                >
+                  <div className="focus-top">
+                    <span
+                      className={
+                        "project-symbol type-bg-" + data.types.indexOf(p.type)
+                      }
+                    >
+                      <FileText size={19} />
+                    </span>
+                    <span className="focus-copy">
+                      <b>{p.title}</b>
+                      <span>
+                        {shortType(p.type)} ·{" "}
+                        {p.department.replace("College of ", "")}
+                      </span>
+                    </span>
+                    <ChevronRight size={17} />
+                  </div>
+                  <div className="mini-timeline">
+                    {checklist.map((phase, i) => (
+                      <span
+                        key={phase.id}
+                        className={i <= p.phase ? "reached" : ""}
+                      >
+                        <i />
+                        {phase.name
+                          .replace(/^(I+\.|IV\.)\s*/, "")
+                          .replace(" PHASE", "")
+                          .toLowerCase()}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            {!active.length && <Empty title="No ongoing research" />}
+          </section>
+          <section className="panel">
+            <div className="section-heading">
+              <h2>Research by department</h2>
+              <Building2 size={17} className="muted" />
+            </div>
+            <p className="panel-description">
+              Project distribution in your authorized scope
+            </p>
+            <div className="department-chart">
+              {byDept.map(({ name, n }) => (
+                <button
+                  key={name}
+                  onClick={() => {
+                    setDepartment(name);
+                    setPage("Research projects");
+                  }}
+                  title={name}
+                >
+                  <span>
+                    {name
+                      .replace("College of ", "")
+                      .replace(
+                        "Public Administration and Governance",
+                        "Public Admin.",
+                      )}
+                  </span>
+                  <div className="bar-track">
+                    <i
+                      style={{
+                        width:
+                          (n / Math.max(...byDept.map((d) => d.n), 1)) * 100 +
+                          "%",
+                      }}
+                    />
+                  </div>
+                  <b>{n}</b>
+                </button>
+              ))}
+            </div>
+            <div className="chart-note">
+              <span className="legend-square" />
+              Research projects · {filtered.length} total
+            </div>
+          </section>
+          <section className="panel">
+            <div className="section-heading">
+              <h2>What needs attention</h2>
+              <button
+                className="text-button"
+                onClick={() => go("Pending actions")}
+              >
+                Open queue <ArrowRight size={14} />
+              </button>
+            </div>
+            {[
+              [
+                pendingDocs.length,
+                "Documents awaiting evaluation",
+                "Review & approvals",
+                "amber",
+              ],
+              [
+                revisionDocs.length,
+                "Documents returned for correction",
+                "Document submissions",
+                "red",
+              ],
+              [
+                projects.filter((p) => p.status === "Ongoing" && ready(p))
+                  .length,
+                "Projects ready for advancement",
+                "Pending actions",
+                "teal",
+              ],
+              ...(isAdmin
+                ? [
+                    [
+                      data.users.filter((u) => u.status === "Pending").length,
+                      "Accounts awaiting approval",
+                      "User management",
+                      "blue",
+                    ],
+                  ]
+                : []),
+            ].map(([n, label, p, color]) => (
+              <button
+                className="attention-row"
+                key={label}
+                onClick={() => go(p)}
+              >
+                <span className={"attention-number " + color}>{n}</span>
+                <span>{label}</span>
+                <ChevronRight size={15} />
+              </button>
+            ))}
+          </section>
+          <section className="panel">
+            <div className="section-heading">
+              <h2>From the research unit</h2>
+              <button
+                className="text-button"
+                onClick={() => go("News & announcements")}
+              >
+                All updates <ArrowRight size={14} />
+              </button>
+            </div>
+            {data.announcements
+              .filter((a) => a.status === "Published")
+              .slice(0, 2)
+              .map((a) => (
+                <button
+                  className="announcement-preview"
+                  key={a.id}
+                  onClick={() =>
+                    setModal({ kind: "announcement-view", record: a })
+                  }
+                >
+                  <span className="small-caps">{a.category}</span>
+                  <h3>{a.title}</h3>
+                  <span className="muted">
+                    {date(a.createdAt)} <ArrowUpRight size={13} />
+                  </span>
+                </button>
+              ))}
+          </section>
+        </div>
+        <div className="data-caption">
+          <span className="live-dot" />
+          Metrics reflect your authorized records{" "}
+          <span>
+            Synthetic demonstration data · {projects.length} projects in scope
+          </span>
+        </div>
+      </>
+    );
+  }
+  function projectPage() {
+    return (
+      <>
+        {header(
+          "Research projects",
+          "Manage studies across all five research categories.",
+          <button
+            className="button"
+            onClick={() => setModal({ kind: "project" })}
+          >
+            <Plus size={16} />
+            New research
+          </button>,
+        )}
+        {filterBar()}
+        <div className="tabs">
+          <button
+            className={!status ? "selected" : ""}
+            onClick={() => setStatus("")}
+          >
+            All projects <span>{projects.length}</span>
+          </button>
+          {["Ongoing", "Completed", "Archived"].map((s) => (
+            <button
+              key={s}
+              className={status === s ? "selected" : ""}
+              onClick={() => setStatus(s)}
+            >
+              {s}
+              <span>{projects.filter((p) => p.status === s).length}</span>
+            </button>
+          ))}
+        </div>
+        <section className="panel table-panel">{projectTable()}</section>
+        <div className="data-caption">
+          {filtered.length} projects shown{" "}
+          <span>All five categories supported in submissions and reports</span>
+        </div>
+      </>
+    );
+  }
+  function projectDetail() {
+    const current = phase ?? project.phase,
+      phaseObj = checklist[current],
+      docs = data.documents.filter((d) => d.projectId === project.id);
+    return (
+      <>
+        <button className="back-link" onClick={() => setProjectId(null)}>
+          ← Back to {page.toLowerCase()}
+        </button>
+        {header(
+          project.title,
+          <>
+            {project.id} · {project.department} · {project.year}
+          </>,
+          <Badge>{project.status}</Badge>,
+        )}
+        <div className="project-meta">
+          <span>
+            <span
+              className={"type-dot type-" + data.types.indexOf(project.type)}
+            />
+            {project.type}
+          </span>
+          <span>
+            <Users size={15} />
+            {data.users.find((u) => u.id === project.ownerId)?.name}
+          </span>
+          <span>
+            <FileText size={15} />
+            {docs.length} document versions
+          </span>
+        </div>
+        {project.type.includes("Personally") && (
+          <div className="notice">
+            <AlertCircle size={18} />
+            <span>
+              <b>Provisional personally funded checklist.</b> Uses the supplied
+              standard checklist until RDU provides the separate approved
+              variant.
+            </span>
+          </div>
+        )}
+        <div className="lifecycle">
+          {checklist.map((p, i) => (
+            <button
+              key={p.id}
+              onClick={() => setPhase(i)}
+              className={
+                (current === i ? "active " : "") +
+                (i < project.phase ? "complete" : "")
+              }
+            >
+              <span className="stage-marker">
+                {i < project.phase ? <Check size={18} /> : i + 1}
+              </span>
+              <span>
+                <small>
+                  {i < project.phase
+                    ? "Completed"
+                    : i === project.phase
+                      ? "Current phase"
+                      : "Upcoming phase"}
+                </small>
+                <b>{p.name.replace(/^(I+\.|IV\.)\s*/, "")}</b>
+              </span>
+              <ChevronRight size={17} />
+            </button>
+          ))}
+        </div>
+        <div className="tabs">
+          {["Checklist", "Documents", "Activity", "Overview"].map((t) => (
+            <button
+              key={t}
+              className={t === tab ? "selected" : ""}
+              onClick={() => setTab(t)}
+            >
+              {t}
+              {t === "Documents" && <span>{docs.length}</span>}
+            </button>
+          ))}
+        </div>
+        {tab === "Checklist" && (
+          <>
+            <div className="section-heading checklist-heading">
+              <div>
+                <h2>{phaseObj?.name}</h2>
+                <p className="muted">
+                  Upload completion is not approval. Each required item must
+                  pass review.
+                </p>
+              </div>
+              <div>
+                <Badge>
+                  {
+                    itemsFor(current).filter((i) =>
+                      ["Approved", "Not Applicable"].includes(
+                        project.requirements?.[i.id]?.status,
+                      ),
+                    ).length
+                  }{" "}
+                  / {itemsFor(current).length} complete
+                </Badge>
+              </div>
+            </div>
+            {current !== project.phase && (
+              <div className="notice">
+                {current > project.phase
+                  ? "Upcoming phase: submissions unlock after authorized advancement."
+                  : "Completed phase: retained evidence is read-only."}
+              </div>
+            )}
+            {phaseObj?.groups.map((g) => (
+              <section className="panel checklist-group" key={g.id}>
+                <div className="group-heading">
+                  <h3>{g.name}</h3>
+                  <span>{g.items.length} requirements</span>
+                </div>
+                {g.items.map((item) => {
+                  const req = project.requirements?.[item.id] || {
+                      status: "Missing",
+                    },
+                    latest = docs
+                      .filter((d) => d.requirementId === item.id)
+                      .sort((a, b) => b.version - a.version)[0];
+                  return (
+                    <div className="requirement" key={item.id}>
+                      <span
+                        className={
+                          "requirement-icon " +
+                          (["Approved", "Not Applicable"].includes(req.status)
+                            ? "checked"
+                            : "")
+                        }
+                      >
+                        {["Approved", "Not Applicable"].includes(req.status) ? (
+                          <Check size={15} />
+                        ) : (
+                          <FileText size={16} />
+                        )}
+                      </span>
+                      <div className="requirement-copy">
+                        <b>{item.label}</b>
+                        {req.feedback && (
+                          <small className="feedback">
+                            Feedback: {req.feedback}
+                          </small>
+                        )}
+                        {latest && (
+                          <small>
+                            {latest.name} · v{latest.version} ·{" "}
+                            {date(latest.createdAt)}
+                            {latest.staffUpload ? " · Staff upload" : ""}
+                          </small>
+                        )}
+                      </div>
+                      <Badge>{req.status}</Badge>
+                      <div className="requirement-actions">
+                        {latest && (
+                          <button
+                            className="icon-button"
+                            title="View document"
+                            aria-label={"View " + item.label}
+                            onClick={() =>
+                              setModal({ kind: "document", record: latest })
+                            }
+                          >
+                            <Search size={16} />
+                          </button>
+                        )}
+                        {current === project.phase &&
+                          project.status === "Ongoing" && (
+                            <>
+                              {(isHead || project.ownerId === user.id) &&
+                                !["Approved", "Not Applicable"].includes(
+                                  req.status,
+                                ) && (
+                                  <button
+                                    className="button small secondary"
+                                    onClick={() =>
+                                      setModal({
+                                        kind: "upload",
+                                        submissionKey: crypto.randomUUID(),
+                                        item,
+                                        project,
+                                      })
+                                    }
+                                  >
+                                    <Upload size={14} />
+                                    {latest ? "Resubmit" : "Upload"}
+                                  </button>
+                                )}
+                              {isHead &&
+                                latest?.status === "Pending Review" && (
+                                  <button
+                                    className="button small"
+                                    onClick={() =>
+                                      setModal({
+                                        kind: "document",
+                                        record: latest,
+                                      })
+                                    }
+                                  >
+                                    Review
+                                  </button>
+                                )}
+                              {isHead &&
+                                item.conditional &&
+                                req.status !== "Approved" && (
+                                  <button
+                                    className="text-button small"
+                                    onClick={() =>
+                                      setModal({
+                                        kind: "applicability",
+                                        applicable:
+                                          req.status === "Not Applicable",
+                                        item,
+                                        project,
+                                      })
+                                    }
+                                  >
+                                    {req.status === "Not Applicable"
+                                      ? "Mark applicable"
+                                      : "Not applicable"}
+                                  </button>
+                                )}
+                            </>
+                          )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </section>
+            ))}
+            <section className="advance-panel">
+              <div>
+                <h3>
+                  {ready(project)
+                    ? "Ready for advancement"
+                    : "Phase advancement is locked"}
+                </h3>
+                <p>
+                  {ready(project)
+                    ? "All mandatory documentary requirements are approved. A Department Head must sign the transition."
+                    : "Missing, rejected, unreviewed, or returned documents must be resolved before this project can advance."}
+                </p>
+              </div>
+              {isHead && project.status === "Ongoing" && (
+                <button
+                  className="button"
+                  disabled={!ready(project) || current !== project.phase}
+                  onClick={() => setModal({ kind: "advance", project })}
+                >
+                  {project.phase === 2
+                    ? "Complete research"
+                    : "Review & advance"}
+                  <ArrowRight size={16} />
+                </button>
+              )}
+            </section>
+            <section className="monitoring-note">
+              <Activity size={22} />
+              <div>
+                <h3>IV. MONITORING AND EVALUATION</h3>
+                <p>
+                  <b>A. Monitoring</b> — Monitoring covers the whole process of
+                  the research project.
+                </p>
+                <p>
+                  <b>B. Evaluation</b> — Evaluation is conducted at key stages
+                  of the research process, particularly during
+                  conceptualization, dissemination and publication.
+                </p>
+                <button
+                  className="text-button"
+                  onClick={() => setTab("Activity")}
+                >
+                  View monitoring and decision history <ArrowRight size={14} />
+                </button>
+              </div>
+            </section>
+          </>
+        )}
+        {tab === "Documents" && documentTable(docs)}
+        {tab === "Activity" &&
+          auditList(
+            data.audit.filter((a) => String(a.entity).includes(project.id)),
+          )}
+        {tab === "Overview" && (
+          <section className="panel prose">
+            <h2>Research summary</h2>
+            <p>{project.abstract}</p>
+            <dl>
+              <dt>Project type</dt>
+              <dd>{project.type}</dd>
+              <dt>Academic program</dt>
+              <dd>{project.program || "Not specified"}</dd>
+              <dt>Created</dt>
+              <dd>{date(project.createdAt)}</dd>
+              <dt>Progress</dt>
+              <dd>
+                <Progress project={project} checklist={checklist} />
+              </dd>
+            </dl>
+            {project.status === "Completed" && !isResearcher && (
+              <button
+                className="button secondary"
+                onClick={() =>
+                  run(
+                    () =>
+                      api("/projects/" + project.id + "/archive", "POST", {}),
+                    "Project archived.",
+                  )
+                }
+              >
+                <Archive size={16} />
+                Archive completed research
+              </button>
+            )}
+          </section>
+        )}
+      </>
+    );
+  }
+  function documentTable(docs) {
+    return (
+      <section className="panel table-panel">
+        {docs.length ? (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Document / version</th>
+                  <th>Research project</th>
+                  <th>Submitted by</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {docs.map((d) => (
+                  <tr key={d.id}>
+                    <td>
+                      <b className="file-name">
+                        <FileText size={17} />
+                        {d.name}
+                      </b>
+                      <div className="cell-sub">
+                        Version {d.version} · {date(d.createdAt)}
+                        {d.synthetic ? " · Synthetic PDF" : ""}
+                      </div>
+                    </td>
+                    <td>
+                      <button
+                        className="project-link"
+                        onClick={() => openProject(d.projectId)}
+                      >
+                        {projects.find((p) => p.id === d.projectId)?.title}
+                      </button>
+                    </td>
+                    <td>
+                      {d.uploaderName}
+                      <div className="cell-sub">
+                        {d.staffUpload
+                          ? "Staff-side upload"
+                          : "Researcher submission"}
+                      </div>
+                    </td>
+                    <td>
+                      <Badge>{d.status}</Badge>
+                    </td>
+                    <td>
+                      <button
+                        className="button small secondary"
+                        onClick={() =>
+                          setModal({ kind: "document", record: d })
+                        }
+                      >
+                        {isHead && d.status === "Pending Review"
+                          ? "Review PDF"
+                          : "View PDF"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <Empty
+            title="No documents match"
+            text="Upload PDF requirements from a project's checklist."
+          />
+        )}
+      </section>
+    );
+  }
+  function auditList(entries) {
+    return (
+      <section className="panel">
+        {entries.length ? (
+          <div className="activity-list">
+            {entries.map((a) => (
+              <div className="activity-item" key={a.id}>
+                <span className="activity-point" />
+                <div>
+                  <b>{a.action}</b>
+                  <p>
+                    {a.actor} · {a.entity}
+                  </p>
+                  {a.reason && <p>{a.reason}</p>}
+                </div>
+                <time>
+                  {date(a.createdAt)}
+                  <br />
+                  {time(a.createdAt)}
+                </time>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Empty title="No activity in this view" />
+        )}
+      </section>
+    );
+  }
+  function actionsPage() {
+    const readyProjects = projects.filter(
+      (p) => p.status === "Ongoing" && ready(p),
+    );
+    return (
+      <>
+        {header(
+          "Pending actions",
+          "Actionable tasks, separate from informative notifications.",
+        )}
+        <div className="action-sections">
+          <section className="panel">
+            <h2>
+              {isResearcher
+                ? "Documents to correct"
+                : "Documents awaiting review"}
+            </h2>
+            {(isResearcher ? revisionDocs : pendingDocs).length ? (
+              (isResearcher ? revisionDocs : pendingDocs).map((d) => (
+                <div className="action-item" key={d.id}>
+                  <span className="attention-number amber">
+                    <FileText size={18} />
+                  </span>
+                  <div>
+                    <b>{d.name}</b>
+                    <p>{projects.find((p) => p.id === d.projectId)?.title}</p>
+                    {d.feedback && <p className="feedback">{d.feedback}</p>}
+                  </div>
+                  <button
+                    className="button small secondary"
+                    onClick={() =>
+                      isHead
+                        ? setModal({ kind: "document", record: d })
+                        : openProject(d.projectId)
+                    }
+                  >
+                    {isHead ? "Review" : "Open project"}
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <Empty
+                title="You're all caught up"
+                text="No document tasks require your attention."
+              />
+            )}
+          </section>
+          <section className="panel">
+            <h2>Ready for phase advancement</h2>
+            {readyProjects.length ? (
+              readyProjects.map((p) => (
+                <div className="action-item" key={p.id}>
+                  <CheckCircle2 size={22} className="teal" />
+                  <div>
+                    <b>{p.title}</b>
+                    <p>
+                      All requirements approved · {checklist[p.phase]?.name}
+                    </p>
+                  </div>
+                  <button
+                    className="button small secondary"
+                    onClick={() => openProject(p.id)}
+                  >
+                    Open checklist
+                  </button>
+                </div>
+              ))
+            ) : (
+              <Empty
+                title="No phases ready yet"
+                text="Projects appear here after every mandatory item passes review."
+              />
+            )}
+          </section>
+          {isAdmin && (
+            <section className="panel">
+              <h2>Account approvals</h2>
+              {data.users
+                .filter((u) => u.status === "Pending")
+                .map((u) => (
+                  <div className="action-item" key={u.id}>
+                    <span className="avatar">{initials(u.name)}</span>
+                    <div>
+                      <b>{u.name}</b>
+                      <p>{u.email}</p>
+                    </div>
+                    <button
+                      className="button small"
+                      onClick={() => {
+                        go("User management");
+                        setModal({ kind: "user", record: u });
+                      }}
+                    >
+                      Review account
+                    </button>
+                  </div>
+                ))}
+            </section>
+          )}
+        </div>
+      </>
+    );
+  }
+  function notificationsPage() {
+    const list = notifications.filter(
+      (n) =>
+        (!q ||
+          [n.title, n.body]
+            .join(" ")
+            .toLowerCase()
+            .includes(q.toLowerCase())) &&
+        (!status || (status === "Unread" ? !n.read : n.type === status)),
+    );
+    return (
+      <>
+        {header(
+          "Notifications",
+          "Research updates delivered only to your account.",
+          <button
+            className="button secondary"
+            onClick={() =>
+              run(
+                () => api("/notifications/read", "POST", { id: "all" }),
+                "All notifications marked as read.",
+              )
+            }
+          >
+            <Check size={16} />
+            Mark all as read
+          </button>,
+        )}
+        <div className="filters">
+          <div className="search">
+            <Search size={16} />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search notifications"
+              aria-label="Search notifications"
+            />
+          </div>
+          <select
+            aria-label="Notification filter"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="">All updates</option>
+            <option>Unread</option>
+            {[...new Set(notifications.map((n) => n.type))].map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+        <section className="panel notification-list">
+          {list.length ? (
+            list.map((n) => (
+              <button
+                className={"notification " + (!n.read ? "unread" : "")}
+                key={n.id}
+                onClick={async () => {
+                  await run(() =>
+                    api("/notifications/read", "POST", { id: n.id }),
+                  );
+                  if (n.projectId) openProject(n.projectId);
+                }}
+              >
+                <span className="notification-symbol">
+                  <Bell size={19} />
+                </span>
+                <div>
+                  <b>{n.title}</b>
+                  <p>{n.body}</p>
+                  <small>
+                    {date(n.createdAt)} · {n.priority || "Normal"} priority{" "}
+                    {n.resolved ? "· Resolved" : ""}
+                  </small>
+                </div>
+                {!n.read && <span className="unread-dot" />}
+                <ChevronRight size={17} />
+              </button>
+            ))
+          ) : (
+            <Empty title="No notifications" />
+          )}
+        </section>
+      </>
+    );
+  }
+  function usersPage(faculty = false) {
+    const list = data.users.filter(
+      (u) =>
+        (!faculty || u.role === "Researcher") &&
+        (!q ||
+          [u.name, u.email, u.department]
+            .join(" ")
+            .toLowerCase()
+            .includes(q.toLowerCase())),
+    );
+    return (
+      <>
+        {header(
+          faculty ? "Faculty research profiles" : "User management",
+          faculty
+            ? "Faculty participation and research history in your scope."
+            : "Approve accounts and assign explicit roles and department scope.",
+          !faculty && (
+            <button
+              className="button"
+              onClick={() => setModal({ kind: "user" })}
+            >
+              <Plus size={16} />
+              Add account
+            </button>
+          ),
+        )}
+        <div className="filters">
+          <div className="search">
+            <Search size={16} />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search name, email or department"
+              aria-label="Search faculty or users"
+            />
+          </div>
+        </div>
+        <section className="panel table-panel">
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name / institutional email</th>
+                  <th>Department</th>
+                  <th>{faculty ? "Research participation" : "Role"}</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((u) => (
+                  <tr key={u.id}>
+                    <td>
+                      <div className="person-cell">
+                        <span className="avatar">{initials(u.name)}</span>
+                        <span>
+                          <b>{u.name}</b>
+                          <small>{u.email}</small>
+                        </span>
+                      </div>
+                    </td>
+                    <td>{u.department || "Not assigned"}</td>
+                    <td>
+                      {faculty
+                        ? projects.filter((p) => p.ownerId === u.id).length +
+                          " projects"
+                        : u.role}
+                    </td>
+                    <td>
+                      <Badge>{u.status}</Badge>
+                    </td>
+                    <td>
+                      <button
+                        className="button small secondary"
+                        onClick={() =>
+                          setModal({
+                            kind: faculty ? "faculty" : "user",
+                            record: u,
+                          })
+                        }
+                      >
+                        {faculty ? "View profile" : "Manage"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {!list.length && <Empty title="No matching people" />}
+        </section>
+      </>
+    );
+  }
+  function reportsPage() {
+    const result = buildReport(
+      { ...data, projects: filtered },
+      report,
+      checklist,
+    );
+    return (
+      <>
+        {header(
+          "Reports & analytics",
+          "Generate reports from authorized, current research records.",
+          <>
+            <button
+              className="button secondary"
+              onClick={async () => {
+                if (
+                  await run(() =>
+                    api("/reports/print", "POST", {
+                      report,
+                      filters: { q, type, department, year, status },
+                    }),
+                  )
+                )
+                  window.print();
+              }}
+            >
+              <FileText size={16} />
+              Print / Save PDF
+            </button>
+            <button className="button" onClick={exportCsv}>
+              <Download size={16} />
+              Export CSV
+            </button>
+          </>,
+        )}
+        <div className="report-type">
+          <Field label="Report">
+            <select value={report} onChange={(e) => setReport(e.target.value)}>
+              {reportNames.map((r) => (
+                <option key={r}>{r}</option>
+              ))}
+            </select>
+          </Field>
+          <p>
+            Preview, CSV and printable PDF use the same filtered report data.
+          </p>
+        </div>
+        {filterBar()}
+        <div className="print-header">
+          <h1>Research and Development Management System</h1>
+          <p>
+            {report} · Generated by {user.name} · {date(new Date())}
+          </p>
+        </div>
+        <section className="report-summary">
+          <h2>{report}</h2>
+          <div>
+            <b>{result.rows.length}</b> report rows ·{" "}
+            {department || "All authorized departments"} ·{" "}
+            {type || "All research types"} · {year || "All years"}
+          </div>
+          <p className="muted">
+            Generated {date(new Date())} by {user.name}. Synthetic prototype
+            data.
+          </p>
+        </section>
+        <section className="panel table-panel">
+          {result.rows.length ? (
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    {result.columns.map((c) => (
+                      <th key={c}>{c}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.rows.map((row, i) => (
+                    <tr key={i}>
+                      {row.map((value, j) => (
+                        <td key={j}>{String(value ?? "—")}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <Empty
+              title="No report rows match"
+              text="Change filters or select another report."
+            />
+          )}
+        </section>
+      </>
+    );
+  }
+  function newsPage() {
+    return (
+      <>
+        {header(
+          "News & announcements",
+          "Calls for papers, opportunities, and updates from the research unit.",
+          isPublisher && (
+            <button
+              className="button"
+              onClick={() => setModal({ kind: "announcement" })}
+            >
+              <Plus size={16} />
+              Create announcement
+            </button>
+          ),
+        )}
+        <div className="news-grid">
+          {data.announcements.map((a) => (
+            <article className="panel news-card" key={a.id}>
+              <div className="section-heading">
+                <span className="small-caps">{a.category}</span>
+                <Badge>{a.status}</Badge>
+              </div>
+              <h2>{a.title}</h2>
+              <p>{a.body.length > 210 ? a.body.slice(0, 210) + "…" : a.body}</p>
+              <div className="news-meta">
+                {a.author} · {date(a.createdAt)}
+                <br />
+                Audience: {a.department || "All"}
+                {a.deadline && (
+                  <>
+                    <br />
+                    Deadline: {date(a.deadline)}
+                  </>
+                )}
+              </div>
+              <div className="news-actions">
+                <button
+                  className="text-button"
+                  onClick={() =>
+                    setModal({ kind: "announcement-view", record: a })
+                  }
+                >
+                  Read announcement <ArrowRight size={14} />
+                </button>
+                {isPublisher && (
+                  <button
+                    className="text-button"
+                    onClick={() =>
+                      setModal({ kind: "announcement", record: a })
+                    }
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+        {!data.announcements.length && <Empty title="No announcements yet" />}
+      </>
+    );
+  }
+  function assistantPage() {
+    return (
+      <>
+        {header(
+          "Research assistant",
+          "Ask about the research records you are authorized to see.",
+        )}
+        <section className="assistant-layout">
+          <div className="assistant-mark">
+            <Sparkles size={29} />
+          </div>
+          <h2>A little clarity for your next step.</h2>
+          <p>
+            Find research, understand progress, and identify missing
+            requirements.
+          </p>
+          <div className="suggestions">
+            {[
+              "Which projects need attention?",
+              "Summarize my research projects",
+              "What requirements are missing?",
+            ].map((s) => (
+              <button key={s} onClick={() => setQuestion(s)}>
+                {s}
+                <ArrowUpRight size={14} />
+              </button>
+            ))}
+          </div>
+          <form
+            className="assistant-input"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setBusy(true);
+              try {
+                const a = await api("/assistant", "POST", { question });
+                setAnswer(a.answer);
+              } catch (e) {
+                setError(e.message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <input
+              aria-label="Question for research assistant"
+              placeholder="Ask a research status question…"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              required
+            />
+            <button className="button" disabled={busy}>
+              Ask <ArrowRight size={17} />
+            </button>
+          </form>
+          {answer && (
+            <div className="assistant-answer">
+              <h3>Authorized research summary</h3>
+              <p>{answer}</p>
+            </div>
+          )}
+          <div className="assistant-disclaimer">
+            <ShieldCheck size={17} />
+            <span>
+              Local, rule-based advisory assistant — not a live AI service. It
+              cannot verify authenticity, approve documents, or advance phases.
+            </span>
+          </div>
+        </section>
+      </>
+    );
+  }
+  function rolesPage() {
+    return (
+      <>
+        {header(
+          "Roles & permissions",
+          "Explicit access boundaries for this prototype.",
+        )}
+        <section className="panel table-panel">
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Capability</th>
+                  {[
+                    "Super Admin",
+                    "Research Director",
+                    "Department Head",
+                    "Researcher",
+                  ].map((r) => (
+                    <th key={r}>{r}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  [
+                    "Research visibility",
+                    "Institution",
+                    "Institution",
+                    "Own department",
+                    "Own projects",
+                  ],
+                  ["Manage accounts / security", "Yes", "No", "No", "No"],
+                  [
+                    "Review and advance phases",
+                    "No",
+                    "No",
+                    "Own department",
+                    "No",
+                  ],
+                  ["Staff-side PDF upload", "No", "No", "Own department", "No"],
+                  [
+                    "Submit documentary requirements",
+                    "No",
+                    "No",
+                    "For own department",
+                    "Own projects",
+                  ],
+                  ["Publish announcements", "Yes", "Yes", "No", "No"],
+                  [
+                    "Reports and exports",
+                    "Institution",
+                    "Institution",
+                    "Own department",
+                    "Own summary",
+                  ],
+                ].map((row) => (
+                  <tr key={row[0]}>
+                    {row.map((v, i) => (
+                      <td key={i}>{v}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <div className="notice">
+          <ShieldCheck size={20} />
+          <span>
+            These are server-enforced demo policies approved for this build.
+            Director monitoring does not confer account administration or review
+            authority. Optional Reviewer role is not enabled.
+          </span>
+        </div>
+      </>
+    );
+  }
+  function settingsPage() {
+    return (
+      <>
+        {header(
+          "System settings",
+          "Local prototype configuration and integration readiness.",
+        )}
+        <section className="panel settings-panel">
+          <h2>Institution identity</h2>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const f = new FormData(e.currentTarget);
+              await run(
+                () =>
+                  api("/settings", "POST", {
+                    institution: f.get("institution"),
+                  }),
+                "Institution setting saved.",
+              );
+            }}
+          >
+            <Field label="Institution">
+              <input
+                name="institution"
+                defaultValue={
+                  data.settings.institution || "Bukidnon State University"
+                }
+                required
+                maxLength={150}
+              />
+            </Field>
+            <button className="button" disabled={busy}>
+              Save settings
+            </button>
+          </form>
+        </section>
+        <section className="panel settings-panel">
+          <h2>Integrations & source dependencies</h2>
+          {[
+            [
+              "Google Single Sign-On",
+              "Not configured",
+              "Demo access is not Google authentication. Production requires verified Google identity and institutional access policy.",
+            ],
+            [
+              "Email delivery",
+              "Not configured",
+              "In-app notifications work. Email must be configured with a delivery provider and retry-capable queue.",
+            ],
+            [
+              "Official BukSU / RDU branding",
+              "Assets required",
+              "Current tokens are provisional, not official university colors or logos.",
+            ],
+            [
+              "Personally funded checklist",
+              "Provisional",
+              "Shared standard checklist enabled by approval; replace with official variant when supplied.",
+            ],
+            [
+              "Database and document storage",
+              "Local persistence",
+              "SQLite records and private PDFs live under data/. Back up this directory together.",
+            ],
+          ].map(([name, state, desc]) => (
+            <div className="integration" key={name}>
+              <div>
+                <b>{name}</b>
+                <p>{desc}</p>
+              </div>
+              <Badge>{state}</Badge>
+            </div>
+          ))}
+        </section>
+        <section className="panel settings-panel">
+          <h2>Academic directory</h2>
+          <p className="muted">
+            Departments and programs supplied to research forms.
+          </p>
+          <div className="directory-grid">
+            {data.departments.map((d) => (
+              <div key={typeof d === "string" ? d : d.name}>
+                <Building2 size={17} />
+                {typeof d === "string" ? d : d.name}
+              </div>
+            ))}
+          </div>
+        </section>
+      </>
+    );
+  }
+  function renderPage() {
+    if (project) return projectDetail();
+    switch (page) {
+      case "Overview":
+        return renderOverview();
+      case "Research projects":
+        return projectPage();
+      case "Pending actions":
+        return actionsPage();
+      case "Notifications":
+        return notificationsPage();
+      case "Document submissions":
+        return (
+          <>
+            {header(
+              "Document submissions",
+              "Versioned documentary evidence, signatures, and review status.",
+            )}
+            {filterBar()}{" "}
+            {documentTable(
+              data.documents.filter((d) =>
+                filtered.some((p) => p.id === d.projectId),
+              ),
+            )}
+          </>
+        );
+      case "Review & approvals":
+        return (
+          <>
+            {header(
+              "Review & approvals",
+              isHead
+                ? "Evaluate submitted evidence and sign your decisions."
+                : "Monitor evaluation status. Only Department Heads can record reviews.",
+            )}
+            <div className="tabs">
+              {["Pending Review", "Needs Revision", "Approved", "Rejected"].map(
+                (s) => (
+                  <button
+                    key={s}
+                    className={
+                      (status || "Pending Review") === s ? "selected" : ""
+                    }
+                    onClick={() => setStatus(s)}
+                  >
+                    {s}
+                    <span>
+                      {data.documents.filter((d) => d.status === s).length}
+                    </span>
+                  </button>
+                ),
+              )}
+            </div>
+            {documentTable(
+              data.documents.filter(
+                (d) => d.status === (status || "Pending Review"),
+              ),
+            )}
+          </>
+        );
+      case "Research archive":
+        return (
+          <>
+            {header(
+              "Research archive",
+              "Preserved completed research and its documentary history.",
+            )}
+            {filterBar()}
+            <section className="panel table-panel">
+              {projectTable(
+                filtered.filter((p) =>
+                  ["Completed", "Archived"].includes(p.status),
+                ),
+              )}
+            </section>
+          </>
+        );
+      case "Faculty profiles":
+        return usersPage(true);
+      case "User management":
+        return usersPage();
+      case "Reports & analytics":
+        return reportsPage();
+      case "News & announcements":
+        return newsPage();
+      case "Research assistant":
+        return assistantPage();
+      case "Roles & permissions":
+        return rolesPage();
+      case "Audit history":
+        return (
+          <>
+            {header(
+              "Audit history",
+              "Immutable records of submissions, signed reviews, transitions, and administrative actions.",
+            )}
+            {auditList(data.audit)}
+          </>
+        );
+      case "System settings":
+        return settingsPage();
+      default:
+        return renderOverview();
+    }
+  }
+  function renderModal() {
+    if (!modal) return null;
+    const m = modal;
+    let title = "",
+      content;
+    if (m.kind === "project") {
+      title = "Submit new research";
+      content = (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const f = Object.fromEntries(new FormData(e.currentTarget));
+            const ok = await run(
+              () => api("/projects", "POST", f),
+              "Research project created. Open its checklist to upload requirements.",
+            );
+            if (ok) {
+              setModal(null);
+              go("Research projects");
+            }
+          }}
+        >
+          <Field label="Research title">
+            <input
+              name="title"
+              required
+              maxLength={220}
+              placeholder="Enter a descriptive research title"
+            />
+          </Field>
+          <ProjectFields data={data} user={user} />
+          <Field label="Research abstract">
+            <textarea
+              name="abstract"
+              rows="4"
+              required
+              minLength={20}
+              maxLength={6000}
+              placeholder="Summarize the problem, objectives, and approach."
+            />
+          </Field>
+          <div className="notice">
+            <AlertCircle size={17} />
+            <span>
+              A researcher cannot start another study while an existing study
+              has an incomplete phase. The server checks this rule.
+            </span>
+          </div>
+          <div className="form-actions">
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => setModal(null)}
+            >
+              Cancel
+            </button>
+            <button className="button" disabled={busy}>
+              {busy ? "Submitting…" : "Create research project"}
+            </button>
+          </div>
+        </form>
+      );
+    }
+    if (m.kind === "upload") {
+      title = "Upload documentary requirement";
+      content = (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const f = new FormData(e.currentTarget);
+            f.set("requirementId", m.item.id);
+            f.set("submissionKey", m.submissionKey);
+            if (
+              await run(
+                () => api("/projects/" + m.project.id + "/upload", "POST", f),
+                "PDF submitted for review. Prior versions are retained.",
+              )
+            )
+              setModal(null);
+          }}
+        >
+          <p className="modal-context">{m.project.title}</p>
+          <div className="requirement-callout">{m.item.label}</div>
+          <Field
+            label="PDF document"
+            hint="PDF only · Maximum 10 MB · File content is validated on the server."
+          >
+            <input
+              type="file"
+              name="file"
+              accept="application/pdf,.pdf"
+              required
+            />
+          </Field>
+          <Field
+            label="Submission e-signature"
+            hint="Type your full name to sign this submission."
+          >
+            <input
+              name="signature"
+              required
+              minLength={3}
+              defaultValue={user.name}
+            />
+          </Field>
+          <Field
+            label={
+              isHead
+                ? "Reason for staff upload (required)"
+                : "Version / correction note"
+            }
+          >
+            <textarea
+              name="reason"
+              required={isHead}
+              rows="3"
+              placeholder={
+                isHead
+                  ? "Explain why you are uploading on behalf of the researcher."
+                  : "Describe corrections or explain this submission."
+              }
+            />
+          </Field>
+          <div className="notice">
+            Staff uploads are not automatically approved. Approved documents
+            cannot be silently replaced.
+          </div>
+          <div className="form-actions">
+            <button className="button" disabled={busy}>
+              {busy ? "Uploading…" : "Sign & submit PDF"}
+              <Upload size={16} />
+            </button>
+          </div>
+        </form>
+      );
+    }
+    if (m.kind === "document") {
+      const d = data.documents.find((d) => d.id === m.record.id) || m.record;
+      title = "Document review";
+      content = (
+        <>
+          <div className="document-meta">
+            <div>
+              <h3>{d.name}</h3>
+              <p>
+                Version {d.version} · {date(d.createdAt)} · {d.uploaderName}
+              </p>
+            </div>
+            <Badge>{d.status}</Badge>
+          </div>
+          {d.synthetic && (
+            <div className="notice">
+              Synthetic demonstration PDF — not an actual faculty research
+              document.
+            </div>
+          )}
+          <div className="pdf-frame">
+            <iframe
+              title={"PDF preview: " + d.name}
+              src={"/api/documents/" + d.id + "/file"}
+            />
+          </div>
+          <div className="document-toolbar">
+            <a
+              className="button small secondary"
+              href={"/api/documents/" + d.id + "/file"}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <ArrowUpRight size={15} />
+              Open full PDF
+            </a>
+            <span>Signed: {d.signature || "Seeded demo signature"}</span>
+          </div>
+          {d.reason && <p className="muted">Upload note: {d.reason}</p>}
+          {d.feedback && (
+            <div className="notice">Reviewer feedback: {d.feedback}</div>
+          )}
+          {isHead && d.status === "Pending Review" && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const f = Object.fromEntries(new FormData(e.currentTarget));
+                if (
+                  await run(
+                    () => api("/documents/" + d.id + "/review", "POST", f),
+                    "Signed review recorded and researcher notified.",
+                  )
+                )
+                  setModal(null);
+              }}
+            >
+              <div className="form-grid">
+                <Field label="Decision">
+                  <select name="decision" required>
+                    <option>Approved</option>
+                    <option>Needs Revision</option>
+                    <option>Rejected</option>
+                  </select>
+                </Field>
+                <Field label="Reviewer e-signature">
+                  <input
+                    name="signature"
+                    defaultValue={user.name}
+                    required
+                    minLength={3}
+                  />
+                </Field>
+              </div>
+              <Field
+                label="Review feedback"
+                hint="Required for corrections and rejection; retained in the audit history."
+              >
+                <textarea
+                  name="feedback"
+                  rows="3"
+                  placeholder="Explain your evaluation and any required corrections."
+                />
+              </Field>
+              <div className="form-actions">
+                <button className="button" disabled={busy}>
+                  Sign & record decision
+                  <Check size={16} />
+                </button>
+              </div>
+            </form>
+          )}
+        </>
+      );
+    }
+    if (m.kind === "advance") {
+      title =
+        m.project.phase === 2 ? "Complete research" : "Review & advance phase";
+      content = (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const signature = new FormData(e.currentTarget).get("signature");
+            if (
+              await run(
+                () =>
+                  api("/projects/" + m.project.id + "/advance", "POST", {
+                    signature,
+                  }),
+                "Authorized phase transition recorded.",
+              )
+            ) {
+              setModal(null);
+              setPhase(null);
+            }
+          }}
+        >
+          <p>{m.project.title}</p>
+          <div className="notice">
+            The server will recheck every mandatory requirement before recording
+            this signed transition.
+          </div>
+          <Field label="Approver e-signature">
+            <input
+              name="signature"
+              required
+              minLength={3}
+              defaultValue={user.name}
+            />
+          </Field>
+          <div className="form-actions">
+            <button className="button" disabled={busy}>
+              Confirm authorized transition
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </form>
+      );
+    }
+    if (m.kind === "applicability") {
+      title = m.applicable
+        ? "Restore requirement applicability"
+        : "Record requirement applicability";
+      content = (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const reason = new FormData(e.currentTarget).get("reason");
+            if (
+              await run(
+                () =>
+                  api("/projects/" + m.project.id + "/applicability", "POST", {
+                    requirementId: m.item.id,
+                    applicable: Boolean(m.applicable),
+                    reason,
+                  }),
+                "Applicability decision recorded.",
+              )
+            )
+              setModal(null);
+          }}
+        >
+          <p>{m.item.label}</p>
+          <Field
+            label={
+              m.applicable
+                ? "Reason this requirement applies"
+                : "Reason this conditional requirement does not apply"
+            }
+          >
+            <textarea name="reason" required minLength={5} rows="4" />
+          </Field>
+          <div className="notice">
+            Only conditional items can be excluded. This decision is retained in
+            the audit trail.
+          </div>
+          <div className="form-actions">
+            <button className="button" disabled={busy}>
+              {m.applicable
+                ? "Restore as required"
+                : "Record as not applicable"}
+            </button>
+          </div>
+        </form>
+      );
+    }
+    if (m.kind === "user") {
+      const u = m.record;
+      title = u ? "Manage account" : "Add account for approval";
+      content = (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const f = Object.fromEntries(new FormData(e.currentTarget));
+            if (
+              await run(
+                () =>
+                  api(
+                    "/users" + (u ? "/" + u.id : ""),
+                    u ? "PATCH" : "POST",
+                    f,
+                  ),
+                u ? "Account updated." : "Pending account created.",
+              )
+            )
+              setModal(null);
+          }}
+        >
+          {!u ? (
+            <>
+              <Field label="Full name">
+                <input name="name" required maxLength={120} />
+              </Field>
+              <Field label="Institutional email">
+                <input name="email" type="email" required />
+              </Field>
+            </>
+          ) : (
+            <div className="person-cell modal-person">
+              <span className="avatar">{initials(u.name)}</span>
+              <div>
+                <b>{u.name}</b>
+                <p>{u.email}</p>
+              </div>
+            </div>
+          )}
+          <Field label="Role">
+            <select name="role" defaultValue={u?.role || "Researcher"}>
+              {[
+                "Researcher",
+                "Department Head",
+                "Research Director",
+                "Super Admin",
+              ].map((r) => (
+                <option key={r}>{r}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Department scope">
+            <select name="department" defaultValue={u?.department || ""}>
+              {data.departments.map((d) => (
+                <option key={typeof d === "string" ? d : d.name}>
+                  {typeof d === "string" ? d : d.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {u && (
+            <Field label="Account status">
+              <select name="status" defaultValue={u.status}>
+                {[
+                  "Pending",
+                  "Active",
+                  "Rejected",
+                  "Suspended",
+                  "Deactivated",
+                ].map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
+            </Field>
+          )}
+          <div className="notice">
+            Only Active accounts can access protected routes. Role and status
+            changes are audited.
+          </div>
+          <div className="form-actions">
+            <button className="button" disabled={busy}>
+              {u ? "Save account decision" : "Create pending account"}
+            </button>
+          </div>
+        </form>
+      );
+    }
+    if (m.kind === "faculty") {
+      const u = m.record;
+      title = "Faculty research profile";
+      content = (
+        <>
+          <div className="profile-banner">
+            <span className="avatar large">{initials(u.name)}</span>
+            <div>
+              <h2>{u.name}</h2>
+              <p>{u.department}</p>
+              <a href={"mailto:" + u.email}>{u.email}</a>
+            </div>
+          </div>
+          <h3>Research participation</h3>
+          {projects
+            .filter((p) => p.ownerId === u.id)
+            .map((p) => (
+              <button
+                className="profile-project"
+                key={p.id}
+                onClick={() => {
+                  setModal(null);
+                  openProject(p.id);
+                }}
+              >
+                <span>
+                  <b>{p.title}</b>
+                  <small>{p.type}</small>
+                </span>
+                <Badge>{p.status}</Badge>
+                <ChevronRight size={16} />
+              </button>
+            ))}
+          {!projects.some((p) => p.ownerId === u.id) && (
+            <Empty title="No research projects yet" />
+          )}
+          <div className="notice">
+            Profile contact information is limited to supplied demo records; no
+            personal phone or social account is fabricated.
+          </div>
+        </>
+      );
+    }
+    if (m.kind === "announcement") {
+      const a = m.record;
+      title = a ? "Edit announcement" : "Create announcement";
+      content = (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const f = Object.fromEntries(new FormData(e.currentTarget));
+            if (
+              await run(
+                () =>
+                  api(
+                    "/announcements" + (a ? "/" + a.id : ""),
+                    a ? "PATCH" : "POST",
+                    f,
+                  ),
+                "Announcement saved. Published updates notify the target audience.",
+              )
+            )
+              setModal(null);
+          }}
+        >
+          <Field label="Title">
+            <input
+              name="title"
+              defaultValue={a?.title}
+              required
+              maxLength={220}
+            />
+          </Field>
+          <div className="form-grid">
+            <Field label="Category">
+              <select name="category" defaultValue={a?.category}>
+                {[
+                  "Call for Papers",
+                  "Research Opportunities",
+                  "Events",
+                  "Deadlines",
+                  "General Announcements",
+                ].map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Audience">
+              <select name="department" defaultValue={a?.department || "All"}>
+                <option>All</option>
+                {data.departments.map((d) => (
+                  <option key={typeof d === "string" ? d : d.name}>
+                    {typeof d === "string" ? d : d.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+          <Field
+            label="Announcement content"
+            hint="Plain text is rendered safely; executable HTML is not supported."
+          >
+            <textarea
+              name="body"
+              defaultValue={a?.body}
+              rows="7"
+              required
+              maxLength={10000}
+            />
+          </Field>
+          <div className="form-grid">
+            <Field label="Publication status">
+              <select name="status" defaultValue={a?.status || "Draft"}>
+                <option>Draft</option>
+                <option>Published</option>
+                <option>Archived</option>
+              </select>
+            </Field>
+            <Field label="Optional deadline">
+              <input
+                type="date"
+                name="deadline"
+                defaultValue={a?.deadline?.slice(0, 10)}
+              />
+            </Field>
+          </div>
+          <div className="form-actions">
+            <button className="button" disabled={busy}>
+              Save announcement
+            </button>
+          </div>
+        </form>
+      );
+    }
+    if (m.kind === "announcement-view") {
+      const a = m.record;
+      title = a.title;
+      content = (
+        <article className="prose">
+          <div className="section-heading">
+            <Badge>{a.category}</Badge>
+            <span className="muted">{date(a.createdAt)}</span>
+          </div>
+          <p className="announcement-body">{a.body}</p>
+          <p className="muted">
+            Published by {a.author} · Audience: {a.department || "All"}
+          </p>
+          {a.deadline && (
+            <div className="notice">Deadline: {date(a.deadline)}</div>
+          )}
+        </article>
+      );
+    }
+    return (
+      <div
+        className="modal-backdrop"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) setModal(null);
+        }}
+      >
+        <section
+          className={"modal " + (m.kind === "document" ? "wide" : "")}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setModal(null);
+            if (e.key === "Tab") {
+              const nodes = e.currentTarget.querySelectorAll(
+                "button,input,textarea,select,a[href],iframe",
+              );
+              const first = nodes[0],
+                last = nodes[nodes.length - 1];
+              if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last?.focus();
+              } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first?.focus();
+              }
+            }
+          }}
+        >
+          <div className="modal-header">
+            <h2>{title}</h2>
+            <button
+              className="icon-button"
+              aria-label="Close dialog"
+              autoFocus
+              onClick={() => setModal(null)}
+            >
+              <X size={21} />
+            </button>
+          </div>
+          {error && (
+            <div className="error-message" role="alert">
+              {error}
+            </div>
+          )}
+          <div className="modal-body">{content}</div>
+        </section>
+      </div>
+    );
+  }
+  if (!session)
+    return (
+      <div className="loading">
+        <span className="loading-dot" />
+        Loading RDMS workspace…{error && <p>{error}</p>}
+      </div>
+    );
+  if (!data)
+    return (
+      <div className="login-page">
+        <section className="login-story">
+          <div className="brand">
+            <span className="brand-icon">
+              <FolderKanban size={24} />
+            </span>
+            <b>
+              RDMS<span>.</span>
+            </b>
+          </div>
+          <div>
+            <h1>
+              Research moves forward.
+              <br />
+              Nothing gets left behind.
+            </h1>
+            <p>
+              One workspace for every proposal, documentary requirement, review,
+              and research milestone.
+            </p>
+            <div className="login-phases">
+              <span>Conceptualization</span>
+              <ArrowRight size={18} />
+              <span>Development</span>
+              <ArrowRight size={18} />
+              <span>Implementation</span>
+            </div>
+          </div>
+          <small>
+            Research and Development Management System
+            <br />
+            Bukidnon State University · Local interactive prototype
+          </small>
+        </section>
+        <section className="login-form">
+          <div className="login-inner">
+            <h2>Explore your workspace</h2>
+            <p>Choose a demo identity to explore its authorized view.</p>
+            <div className="notice">
+              <AlertCircle size={17} />
+              <span>
+                Local demonstration only. This is not Google authentication.
+                Never use confidential research in demo mode.
+              </span>
+            </div>
+            {error && (
+              <div className="error-message" role="alert">
+                {error}
+              </div>
+            )}
+            <Field label="Demo account">
+              <select
+                id="demo-user"
+                defaultValue={
+                  session.demoUsers?.find((u) => u.role === "Research Director")
+                    ?.id
+                }
+              >
+                {session.demoUsers?.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name} · {u.role}{" "}
+                    {u.status !== "Active" ? "(" + u.status + ")" : ""}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <button
+              className="button login-button"
+              disabled={busy}
+              onClick={() => login(document.getElementById("demo-user").value)}
+            >
+              {busy ? "Opening workspace…" : "Enter demo workspace"}
+              <ArrowRight size={17} />
+            </button>
+            <div className="login-integration">
+              <ShieldCheck size={18} />
+              <div>
+                <b>Google SSO integration pending</b>
+                <p>
+                  Requires an OAuth client and verified server identity
+                  configuration. New real accounts must await admin approval.
+                </p>
+              </div>
+            </div>
+            <p className="login-footnote">
+              Sample research and people are synthetic. Styling is provisional,
+              not official BukSU branding.
+            </p>
+          </div>
+        </section>
+      </div>
+    );
+  return (
+    <div className="app-shell">
+      {mobile && <div className="nav-overlay" onClick={closeNav} />}
+      <aside
+        className={"sidebar " + (mobile ? "open" : "")}
+        inert={smallScreen && !mobile}
+        aria-hidden={smallScreen && !mobile ? true : undefined}
+      >
+        <button className="brand" onClick={() => go("Overview")}>
+          <span className="brand-icon">
+            <FolderKanban size={22} />
+          </span>
+          <b>
+            RDMS<span>.</span>
+          </b>
+        </button>
+        <div className="brand-description">
+          Research and Development
+          <br />
+          Management System
+        </div>
+        <nav aria-label="Main navigation">
+          {navGroups
+            .filter((g) => !g.admin || isAdmin)
+            .map((g, i) => (
+              <div className="nav-group" key={i}>
+                {g.title && <div className="nav-label">{g.title}</div>}
+                {g.items.map(([name, Icon]) => (
+                  <button
+                    key={name}
+                    aria-label={name}
+                    className={"nav-item " + (page === name ? "active" : "")}
+                    onClick={() => go(name)}
+                  >
+                    <Icon size={18} />
+                    <span>{name}</span>
+                    {name === "Pending actions" && pendingDocs.length > 0 && (
+                      <span className="nav-count">{pendingDocs.length}</span>
+                    )}
+                    {name === "Notifications" && unread > 0 && (
+                      <span className="nav-count">{unread}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ))}
+        </nav>
+        <div className="sidebar-footer">
+          <span className="live-dot" />
+          <span>Local prototype workspace</span>
+          <small>Provisional branding · Demo data</small>
+        </div>
+      </aside>
+      <div className="main-shell">
+        <header className="topbar">
+          <div className="breadcrumb">
+            <button
+              className="icon-button mobile-menu"
+              aria-label="Open navigation"
+              onClick={() => setMobile(true)}
+            >
+              <Menu size={21} />
+            </button>
+            <span>Workspace</span>
+            <ChevronRight size={14} />
+            <b>{project ? "Project details" : page}</b>
+          </div>
+          <div className="topbar-actions">
+            <span className="demo-label">DEMO WORKSPACE</span>
+            <button
+              className="notification-bell icon-button"
+              aria-label={"Notifications, " + unread + " unread"}
+              onClick={() => go("Notifications")}
+            >
+              <Bell size={20} />
+              {unread > 0 && <span>{unread}</span>}
+            </button>
+            <div className="identity">
+              <span className="avatar">{initials(user.name)}</span>
+              <div>
+                <b>{user.name}</b>
+                <span>{user.role}</span>
+              </div>
+            </div>
+            <button
+              className="icon-button"
+              title="Switch demo identity"
+              aria-label="Switch demo identity"
+              onClick={async () => {
+                await api("/session", "DELETE");
+                setData(null);
+                setSession(await api("/session"));
+                setError("");
+              }}
+            >
+              <LogOut size={17} />
+            </button>
+          </div>
+        </header>
+        <main className="content">
+          {error && !modal && (
+            <div className="error-message" role="alert">
+              <AlertCircle size={18} />
+              {error}
+              <button
+                className="icon-button"
+                onClick={() => setError("")}
+                aria-label="Dismiss error"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+          {renderPage()}
+          <footer className="page-footer">
+            <span>RDMS · Research and Development Management System</span>
+            <span>Local prototype · Google SSO & email not configured</span>
+          </footer>
+        </main>
+      </div>
+      {renderModal()}
+      {toast && (
+        <div className="toast" role="status">
+          <CheckCircle2 size={19} />
+          {toast}
+          <button
+            className="icon-button"
+            onClick={() => setToast("")}
+            aria-label="Dismiss notification"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<App />);
