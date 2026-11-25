@@ -1,128 +1,87 @@
 ---
-name: RDMS Research wayfinding
-description: Provisional navy-and-teal research operations workspace, documented from the built local prototype.
+name: RDMS Accessible Research wayfinding
+description: Beginner-friendly navy-and-teal research workspace with readable text, spacious controls and guided decisions.
 colors:
   primary: "#176b77"
   primary-hover: "#115b66"
   nav: "#142b46"
-  nav-text: "#c4d3e3"
-  nav-hover: "#203b55"
+  nav-text: "#d8e6f1"
   nav-active: "#2a465f"
-  nav-active-icon: "#91d1d4"
   ground: "#f4f7fa"
   surface: "#ffffff"
   ink: "#233348"
-  muted: "#637489"
-  secondary-text: "#536b82"
-  border: "#dfe6ed"
-  divider: "#edf1f5"
-  secondary-button-text: "#3b5067"
-  secondary-button-border: "#d8e2e9"
-  secondary-button-hover: "#edf3f6"
-  secondary-button-hover-border: "#c6d4df"
-  field-text: "#34475f"
-  field-border: "#d7e0e8"
-  field-hover-border: "#9fb6c5"
-  placeholder: "#62758a"
-  focus: "#2c939d"
-  search-focus: "#58a0a7"
-  pending: "#85601c"
+  muted: "#536b82"
+  border: "#cbd6df"
+  divider: "#e1e8ee"
+  field-border: "#8296a7"
+  focus: "#09677c"
+  danger: "#9b3038"
+  secondary-button-text: "#235969"
+  pending: "#795213"
   pending-bg: "#fff3d9"
-  approved: "#286c51"
+  approved: "#235f46"
   approved-bg: "#e7f3ed"
-  correction: "#a94749"
+  correction: "#963139"
   correction-bg: "#fbeceb"
-  missing: "#61748b"
+  missing: "#465d73"
   missing-bg: "#edf1f6"
-  archived: "#647487"
-  archived-bg: "#edf0f4"
-  badge-text: "#5d7188"
-  badge-bg: "#eef2f6"
-  lifecycle-active: "#edf5f6"
-  lifecycle-marker: "#206c79"
-  lifecycle-hover: "#f1f6f8"
-  chart: "#3d8492"
-  progress: "#4b9199"
-  progress-track: "#e4ebf1"
-  reached-label: "#286b76"
-  type-agenda: "#4a9099"
-  type-curricular: "#8a8fb9"
-  type-external: "#ba9b54"
-  type-personal: "#a97ba9"
-  type-etl: "#8aab79"
+  review-bg: "#f5f9fa"
+  review-border: "#b8cdd8"
+  review-text: "#35576b"
+  chart: "#347e88"
 typography:
   headline:
     fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "29px"
-    fontWeight: 650
+    fontSize: "clamp(1.75rem, 2.4vw, 2.125rem)"
+    fontWeight: 700
     lineHeight: 1.25
-    letterSpacing: "-0.8px"
+    letterSpacing: "-0.02em"
   title:
     fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "17px"
+    fontSize: "1.375rem"
     fontWeight: 650
-    letterSpacing: "-0.2px"
-  panel-title:
+    lineHeight: 1.4
+  section:
     fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "15px"
+    fontSize: "1.125rem"
     fontWeight: 650
-    letterSpacing: "-0.2px"
+    lineHeight: 1.5
   body:
     fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "14px"
+    fontSize: "1rem"
     fontWeight: 400
-  body-prose:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "12px"
-    lineHeight: 1.65
+    lineHeight: 1.6
   label:
     fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "12px"
-    fontWeight: 550
-  table:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "11px"
-  badge:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "9px"
-    fontWeight: 550
-    lineHeight: 1.3
-  metric:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "32px"
+    fontSize: "1rem"
     fontWeight: 650
-    lineHeight: 1
-  nav-group:
+    lineHeight: 1.6
+  supporting:
     fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
-    fontSize: "9px"
-    fontWeight: 650
-    letterSpacing: "1.3px"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.6
 rounded:
-  badge: "4px"
-  field: "5px"
-  control: "6px"
-  callout: "8px"
-  lifecycle: "9px"
-  panel: "10px"
-  dialog: "12px"
+  control: "8px"
+  field: "6px"
+  panel: "12px"
+  review: "10px"
+  dialog: "14px"
 spacing:
-  control-gap: "8px"
-  action-gap: "10px"
-  row-gap: "12px"
-  mobile-gutter: "18px"
-  compact-panel: "19px"
-  grid-gap: "22px"
-  panel-padding: "23px"
-  compact-gutter: "24px"
-  dialog-padding: "25px"
-  content-gutter: "34px"
+  tight: "8px"
+  related: "12px"
+  control-x: "18px"
+  section-inset: "20px"
+  panel: "24px"
+  section-gap: "28px"
+  desktop-gutter: "clamp(20px, 2.5vw, 40px)"
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.surface}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
-    padding: "10px 15px"
+    padding: "11px 18px"
   button-primary-hover:
     backgroundColor: "{colors.primary-hover}"
   button-secondary:
@@ -130,179 +89,174 @@ components:
     textColor: "{colors.secondary-button-text}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
-    padding: "10px 15px"
-  button-secondary-hover:
-    backgroundColor: "{colors.secondary-button-hover}"
-  button-text:
-    textColor: "{colors.primary}"
-    padding: "4px 0px"
-  button-icon:
-    rounded: "{rounded.field}"
-    padding: "7px"
+    padding: "11px 18px"
   input-field:
     backgroundColor: "{colors.surface}"
-    textColor: "{colors.field-text}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
     rounded: "{rounded.field}"
-    padding: "10px 11px"
-  navigation-item:
-    textColor: "{colors.nav-text}"
-    rounded: "{rounded.control}"
     padding: "11px 13px"
-  navigation-item-active:
+  navigation-active:
     backgroundColor: "{colors.nav-active}"
     textColor: "{colors.surface}"
-  status-badge:
-    backgroundColor: "{colors.badge-bg}"
-    textColor: "{colors.badge-text}"
-    typography: "{typography.badge}"
-    rounded: "{rounded.badge}"
-    padding: "5px 7px"
+    typography: "{typography.label}"
+    rounded: "{rounded.control}"
+  status-pending:
+    backgroundColor: "{colors.pending-bg}"
+    textColor: "{colors.pending}"
+    typography: "{typography.supporting}"
   panel:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.panel}"
-    padding: "{spacing.panel-padding}"
-  lifecycle:
-    backgroundColor: "{colors.surface}"
-    rounded: "{rounded.lifecycle}"
+    padding: "{spacing.panel}"
+  review-summary:
+    backgroundColor: "{colors.review-bg}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.review}"
+    padding: "{spacing.panel}"
   dialog:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.dialog}"
-    width: "640px"
+    width: "720px"
 ---
 
-# Design System: RDMS Research wayfinding
+# Design System: RDMS Accessible Research wayfinding
 
 ## Overview
 
 **Creative North Star: "Research wayfinding"**
 
-Make the next research action evident without hiding the documentary evidence. The built interface is a calm, dense operations workspace: a navy navigation shell anchors white working surfaces on a cool near-white ground; teal identifies actions and progress. Familiar buttons, selects, tables, tabs, and dialogs support web operate mode rather than a novel interaction model.
+Make the next research action understandable without requiring technical knowledge. This user-approved accessibility evolution retains the navy navigation, cool light workspace and teal actions, while replacing the predecessor's tiny type and compact controls with readable text, clear instructions and comfortable spacing.
 
-This is the user-approved provisional world, not official BukSU/RDU branding. No official university color values, logo, or fonts were supplied. The RDMS wordmark and folder line icon are prototype identity. There are no shipped raster design assets; the screenshots are evidence only, not interface imagery.
+The visual language serves people operating a research-management system in everyday office and mobile settings. Familiar controls and task-based labels take priority over novelty. The official research checklist and category names remain intact; short explanations make them easier to use.
+
+This is provisional prototype styling, not official BukSU/RDU branding. No official university logo, font or color guide was supplied. There are no shipped raster design assets. Evidence is the current `src/styles.css`, `src/main.jsx`, `src/ui.jsx`, approved `accessible-after.html` preview and the accessible-prefixed desktop/mobile screenshots in the local context directory.
 
 **Key Characteristics:**
 
-- Persistent wayfinding with a compact identity bar and grouped navigation.
-- Aligned, information-dense records with restrained teal actions.
-- Ordered lifecycle evidence with explicit review and locked-phase states.
-- Flat bordered surfaces, small rounded controls, and system typography.
-
-Evidence: `PRODUCT.md`, `architecture.md`, the approved `.thinkrail/context/mockups/rdms-direction.html` proposal, `src/styles.css`, and `src/main.jsx`; rendered checks against `.thinkrail/context/screenshots/desktop.png` (1440px wide overview), `mobile.png` (390px wide researcher overview), and `checklist.png` (1440px wide project checklist). Values below describe the final stylesheet cascade, including its secondary-text overrides. Frontmatter records reused built values, not a new CSS token API; only nav, teal, border, muted, and ground are current CSS custom properties. The sidecar's synthesized tonal ramps are preview metadata, not implemented palette steps.
+- Plain-language navigation and named actions, with every original role-visible feature retained.
+- Readable working text, quieter supporting information and visible status wording.
+- Responsive labeled records instead of sideways-scrolling tables or hidden columns.
+- Guided review, editing and explicit confirmation before sensitive decisions.
 
 ## Colors
 
-A deep navy frame and muted teal action color sit against cool white surfaces. Status colors communicate documentary state, not decoration.
+Navy establishes stable wayfinding; teal identifies action and selection; white and cool near-white surfaces keep long research records readable.
 
 ### Primary
 
-- **Research Teal** (`primary`): primary buttons, text actions, links, and selected-tab underline; its deeper hover variant supplies immediate feedback.
-- **Wayfinding Navy** (`nav`): fixed navigation and login story; pale blue labels, white active text, and a lighter navy selected row keep orientation visible.
-- **Measured Teal** (`chart`, `progress`, `reached-label`): department bars and lifecycle progress, distinct from the action color.
+- **Research Teal** (`primary`, `primary-hover`): buttons, links, selected controls and task actions.
+- **Wayfinding Navy** (`nav`, `nav-text`, `nav-active`): persistent menu and login story, with lighter selected rows and high-contrast text.
+- **Measured Teal** (`chart`): data bars and progress, subordinate to written labels and counts.
 
 ### Secondary
 
-- **Pending Amber** (`pending`, `pending-bg`): ongoing, pending, submitted, and pending-review badges.
-- **Approval Green** (`approved`, `approved-bg`): completed, approved, active, and published badges.
-- **Correction Red** (`correction`, `correction-bg`): revision, rejected, and suspended badges; feedback uses related red-brown text.
-- **Research-type markers**: muted teal, lavender, ochre, mauve, and sage distinguish the five types in order. These are categorical accents, not alternative action colors; related pale icon tiles appear in project lists.
+- **Pending Amber** (`pending`, `pending-bg`): in-progress and waiting-for-review information.
+- **Approval Green** (`approved`, `approved-bg`): completed, approved, active and published states.
+- **Correction Red** (`correction`, `correction-bg`, `danger`): changes needed, rejected/suspended states and leave-without-saving actions.
 
 ### Neutral
 
-- **Cool Ground**, **White Surface**, **Document Ink** (`ground`, `surface`, `ink`): page, cards, and principal text.
-- **Muted Slate** (`muted`): heading descriptions and identity metadata.
-- **Evidence Slate** (`secondary-text`): the final darkened override for table sublines, focus-project metadata, metric captions, panel descriptions, chart notes, data captions, footer, requirement metadata, group counts, lifecycle captions, mini timelines, notification times, field hints, document metadata/toolbars, activity text/times, and other secondary copy. Do not restore the earlier lighter declarations in those selectors. Reached mini-timeline labels and placeholders also have final darker overrides (`reached-label`, `placeholder`).
-- **Cool Rule** (`border`, `divider`): outer card boundaries and quieter row separators. Missing/draft and archived/superseded/deactivated states retain separate slate badge pairs.
+- **Document Ink** (`ink`) is primary copy; **Evidence Slate** (`muted`) is the supporting text color. Supporting information is not made faint to create hierarchy.
+- **Cool Ground** and **White Surface** (`ground`, `surface`) separate the working area from panels.
+- **Cool Rule** (`border`, `divider`, `field-border`) separates sections and makes controls identifiable.
+- **Review Paper** (`review-bg`, `review-border`, `review-text`) distinguishes a confirmation summary without implying that data has already been saved.
 
 **The Evidence State Rule.** Keep status wording visible alongside color; an uploaded document is not an approved document.
 
 ## Typography
 
-**Display and Body Font:** Segoe UI with platform/system and Arial fallbacks, as captured in frontmatter. No webfont, official institutional font, or distinct mono face is installed.
-
-The hierarchy is workhorse sans-serif, compact and consistent rather than editorial. Semibold headings and tabular metric/progress numbers do the organizing; there is no mathematical modular type scale.
+**Display and Body Font:** Segoe UI with platform/system and Arial fallbacks. No external webfont or institutional font is installed.
 
 ### Hierarchy
 
-- **Headline:** page titles use `headline`; they reduce to (25px) at widths up to (1250px). Login story is a larger, separate expression (39px, weight 550, line-height 1.4), reducing through (32px) to (27px).
-- **Title / panel title:** general section headings use `title`; dashboard section headings use `panel-title`. Checklist phase headings remain (17px) until mobile (14px).
-- **Body:** root size is `body`; actual working copy is often (11–12px), with paragraph line-height (1.65). Research-summary prose is capped at (75ch); advancement explanation at (72ch).
-- **Label / table / badge:** preserve the compact roles in frontmatter. Small metadata frequently uses (9–10px); do not describe this built prototype as a 16px-body system.
-- **Metric:** large tabular numerals use `metric`, then (28px) at widths up to (1000px) and (30px) up to (760px).
-- **Navigation group:** uppercase labels use `nav-group`; normal navigation and action labels remain sentence case. Checklist source headings retain their supplied capitalization.
+- **Headline:** the fluid `headline` role provides page orientation without overwhelming task content.
+- **Title:** `title` identifies sections and review summaries.
+- **Section:** `section` provides fieldset legends and smaller task groups.
+- **Body and label:** `body` and `label` are the normal readable working scale. Inputs and file controls stay at this scale rather than shrinking on mobile.
+- **Supporting:** `supporting` is the minimum for metadata, hints, dates, status badges and filter explanations. Important requirements, table values and buttons remain at the body scale.
+
+**The Readable Evidence Rule.** Never shrink information to fit the screen. Reflow the record and wrap the content instead.
+
+Paragraphs and explanations use generous line height and bounded reading measures. Official checklist headings retain their source wording/capitalization; ordinary menu and action labels use sentence case. Numeric data uses aligned tabular presentation where appropriate.
 
 ## Layout
 
-Desktop has a fixed left rail (246px) and a matching main-content offset; the white topbar is (82px) high and is not sticky. Content has a maximum width of (1720px), centered within the main shell, with the frontmatter content gutter. The overview has four metrics in one bordered strip and a two-column content grid (1.44fr / 1fr); repeated panel padding and narrow row rules preserve density without enclosing every datum in a card. This is not a strict 8px spacing system.
+The desktop shell has a persistent navy rail (282px), a main-area offset matching that rail, and fluid content gutters. The header wraps when its account, messages and location controls need more room; labels are not replaced with unexplained icons. Most panels use the shared panel inset and section gaps.
 
-Responsive behavior follows the actual media queries:
+- At widths up to (1250px), overview/news move to one column and metrics become two columns.
+- At widths up to (1100px), standard tables reflow into labeled records. Semantic headings remain available to assistive technology; each value has an explicit mobile label.
+- At widths up to (1000px), the sidebar becomes a dismissible drawer and the content offset disappears.
+- At widths up to (760px), forms, actions, phase controls and other groups adopt a single-column layout where needed. Small-screen confirmation actions remain reachable through internal dialog scrolling.
+- At widths up to (400px), gutters/insets reduce without shrinking the readable type scale.
+- Reports with more than seven columns stack their records at every width rather than hiding columns or requiring sideways scrolling.
 
-- **At least 1600px:** content padding grows to (42px 48px 0); topbar horizontal padding is (48px), overview columns become (1.5fr / 1fr).
-- **Up to 1250px:** rail and main offset narrow to (220px), content becomes (28px 24px 0), panels use compact padding, grid gap becomes (17px), demo topbar badge disappears.
-- **Up to 1000px:** overview and news become one column; department chart uses two columns; heading actions stack vertically. Lifecycle buttons stack marker/copy internally, and requirement rows wrap their actions onto a new line.
-- **Up to 760px:** rail moves off-canvas, main offset disappears, topbar becomes (69px), content padding becomes (25px 18px 0), and metrics become a two-by-two grid. Filters wrap; search spans a full row. Identity name/role and the leading breadcrumb are hidden, while avatar, notifications, identity switch, and menu remain. Lifecycle stays a three-column path with smaller markers and labels; it does not become a vertical wizard. Forms become one column; advancement panels and footers stack. Tables keep horizontal overflow; tabs scroll horizontally.
+The vertical research phase path on small screens is the same three-stage selector as desktop, not a separate workflow. Monitoring and evaluation remains cross-cutting below the evidence.
 
-The small-screen closed rail is both `inert` and `aria-hidden`, with CSS visibility hidden, not merely translated out of view. Opening focuses its first button; Escape, choosing a destination, or clicking the scrim closes it and returns focus to the menu button. The open navigation is not implemented as a modal focus trap, nor does it make the main content inert; do not document those as existing behavior.
-
-Print hides application chrome, controls, filters, tabs, and overlays, shows the report print header, removes panel borders, and reduces table padding/type. CSV and browser print/Save PDF are familiar report outputs, not a custom export canvas.
+Print hides interactive chrome and includes the report identity and filters. Standard records return to a printable table, while wide stacked reports retain labeled content. Print-specific point sizes are distinct from the screen readability floor.
 
 ## Elevation & Depth
 
-Ordinary cards, metric strips, and tables are flat: white fill, fine border, cool ground. Only transient surfaces are lifted. Dialogs use a dark navy translucent scrim and shadow (`0 18px 70px #0a1b3033`); toasts use (`0 8px 30px #142b4622`). Navigation overlays use a separate translucent scrim. Focus is an outline, not a shadow.
+Routine cards, tables and filters are flat: a white surface and fine rules provide separation. Shadows are reserved for dialogs and temporary feedback. Dialogs use a dark translucent navy scrim and (`0 18px 70px #0a1b3055`) shadow; toast feedback uses a smaller offset shadow. No decorative gradients, blur, bevels or raster illustrations are introduced.
 
-**The Flat Workspace Rule.** Reserve shadows for dialogs and toasts; separate working surfaces with tone and borders.
+**The Flat Workspace Rule.** Use tone, spacing and hierarchy for normal records; reserve elevation for temporary surfaces.
 
 ## Shapes
 
-Gently curved rectangles dominate: badges are smallest, fields and icon controls slightly rounder, buttons/navigation rows modestly curved, panels broader, and dialogs broadest (see `rounded`). Lifecycle and toast containers share the intermediate lifecycle radius. Avatars, phase numbers, and state dots are circles via percentage radii; they are not pill-shaped controls. Fine (1px) borders and horizontal separators retain a documentary register. Tables clip inside the panel while their inner wrapper scrolls.
+Controls use modest rounded rectangles, panels slightly broader corners, and dialogs the broadest corners. Badges are small rectangular status labels, never a substitute for a clear action. Phase markers and avatars are circular. Fine separators structure evidence; selection is conveyed through text, outline/underline and fill rather than decorative stripes.
 
 ## Components
 
 ### Buttons
 
-Confident but compact, using familiar browser semantics. Primary and secondary share the frontmatter geometry, an (8px) icon gap, (38px) minimum height, and label weight. Secondary has a cool border and dark slate text; hover changes both fill and border. Small variants use (7px 10px) padding, (11px) type, and (31px) minimum height. Text actions use teal, (11px) type, and an underline on hover. Icon buttons use (7px) padding with a pale hover fill. There is no custom pressed-state transform.
-
-All buttons, links, and fields receive a visible (3px) focus outline with (3px) offset. Disabled buttons use opacity (0.48) and a not-allowed cursor; primary/secondary hover excludes disabled controls. Mobile heading buttons shrink to (34px) minimum height; do not claim universal 44px targets.
+Named, comfortable and predictable. Primary and secondary buttons use body-scale text and standard (48px) targets; interactive controls never intentionally fall below (44px) in either dimension. Labels wrap rather than disappear. Secondary buttons are white with a visible border; teal text actions retain generous targets. Hover and disabled states remain legible. Focus uses a (3px) outline with offset, with a pale focus color on dark surfaces.
 
 ### Inputs / Fields
 
-White, cool-stroked fields with compact radius, teal caret, a darker hover border, associated visible labels, and optional described hints. Native selects, number/date/file inputs, and vertically resizable textareas remain native controls. Form fields use (12px) type and full width. Search is a bordered icon/input group, with a (2px) focus-within outline and no duplicate inner outline. Validation combines native required/type constraints with a separate alert banner; a reusable red input-border variant is not implemented.
+Top-aligned associated labels display Required/Optional. Hints explain the expected input in everyday language. Native PDF/file/date/select controls remain familiar and body-sized. Project forms group name, category/department and study description into fieldsets. Native required/type validation is supplemented with readable alerts; review feedback becomes required when asking for changes or rejecting a document.
 
 ### Status badges
 
-Quiet rectangular tags with explicit text, not interactive filter chips. Semantic status variants use the paired foreground/background tokens; neutral badges handle counts, missing items, and less specific states. No badge hover or selection behavior is implemented.
+Written display labels explain stored statuses without changing their API values. Examples include In progress, Waiting for review, Changes needed, Not submitted and Not needed. Counter badges retain normal numeric/text children rather than converting them to comma-separated strings.
 
-### Cards / Containers and tables
+### Cards / Containers and responsive records
 
-White bordered panels use frontmatter panel geometry; compact viewports reduce padding. Checklist containers use no vertical panel padding, with inset group headings and requirement rows. Table panels remove panel padding, align compact text in semantic tables, use a very pale header, row separators, and a subtle hover fill. Project names are buttons rather than making the entire table row interactive.
+Panels provide consistent hierarchy and spacing, not nested decorative cards. Desktop tables have semantic column headings and wrapping values. Mobile records show every original cell with its heading above the value and a clearly labeled action. Long titles, filenames, department names and feedback are not truncated.
 
 ### Navigation and tabs
 
-Navy grouped button navigation has muted line icons, a lighter active row, white active copy, and teal-tinted active icons. Hover gently lightens the row with a (0.15s) background transition. Navigation visibility is role-dependent. Tabs are button rows with a fine baseline and a teal (2px) selected underline, plus optional small counts; these are not ARIA tablist widgets in the current code.
+The single menu groups related destinations under Research, Reports and updates, and Administration. The active destination has a lighter navy background and `aria-current`. Home, Things to do and Messages use plain language. Tabs are wrapping buttons with pressed-state semantics, a selected fill and functional underline; they do not require sideways navigation.
+
+The closed mobile drawer is inert and hidden. Opening moves focus inside; Tab stays within it; Escape closes it and restores the menu trigger after the main area is no longer inert. Page navigation focuses the new heading instead of leaving focus on an offscreen menu item.
 
 ### Lifecycle and documentary checklist
 
-The signature pattern is a selectable three-phase path: circular numbered markers, completed checks, current/upcoming/completed captions, and a tinted active phase. Selecting a phase reveals its exact checklist, not a route illustration. Upcoming evidence is locked and completed evidence is read-only. Rows combine document/check icon, requirement label, version/file metadata, status badge, and permission-dependent view/upload/resubmit/review actions. The phase-advancement callout explains readiness or lock; upload completion alone never unlocks it. Monitoring and evaluation sit below as cross-cutting evidence, not a fourth phase button. Personally funded projects visibly disclose their provisional shared checklist.
+The exact source checklist remains the authority. Each stage pairs its official name with a short explanation. Evidence rows keep requirement wording, feedback, file/version metadata, status and permission-dependent actions. Locked readiness guidance explains what must happen next. Completed research is described as complete rather than ready to advance again.
 
-### Dialogs and feedback
+### Review-before-save and dialogs
 
-Dialogs are centered, scroll internally up to (92vh), use sticky white headers and (25px) body padding, and widen to (900px) for PDF review. Mobile uses (13px) backdrop padding, (94vh) maximum height, and (18px) internal padding. They expose dialog semantics, autofocus Close, support Escape/backdrop dismissal, and implement endpoint Tab wrapping; do not infer full background inertness or focus restoration. Errors are red-tinted `role="alert"` banners; success toasts are dark teal `role="status"` notices that expire after (4500ms).
+Sensitive forms follow Enter details → Check before saving → Confirm. The first step validates and summarizes without sending a mutation. The summary uses human-readable option labels and filename/size; editing preserves values and selected files. Final confirmation invokes the existing command with unchanged backend values. Failure keeps the same upload attempt key.
 
-Motion is restrained: mobile rail slides over (0.2s ease), chart widths transition over (0.45s cubic-bezier(0.16, 1, 0.3, 1)), toast entry rises (12px) over (0.22s) with the same curve, and the loading ring spins over (1s linear). Reduced-motion media rules disable animations and transitions and restore automatic scroll behavior.
+Closing a changed form requires a keep-editing/leave-without-saving decision. Busy saves cannot be dismissed. Dialogs make background controls inert, trap focus, support Escape appropriately and restore focus on exit. The modal header is not sticky; the complete dialog scrolls internally. Errors use an alert, success uses a status notice, and a failed refresh after successful saving has its own recovery action.
+
+Motion is restrained: toast entry and bounded control/chart feedback support orientation, never hide content. Reduced-motion disables transitions/animation. Forced-colors support retains selection and focus affordances.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** preserve navy wayfinding, white work surfaces, and restrained teal actions.
-- **Do** use the final darker secondary-text and placeholder overrides when reproducing the interface.
-- **Do** keep status wording, version metadata, and locked/ready phase explanations visible.
-- **Do** retain native controls, visible keyboard focus, reduced-motion support, and inert closed mobile navigation.
-- **Do** label demo identities, synthetic evidence, provisional branding, and unavailable integrations honestly.
+- **Do** retain the navy/teal identity while prioritizing readability over compact density.
+- **Do** use body-scale text for working information and at least the supporting scale for secondary details.
+- **Do** reflow every data field into labeled mobile records rather than hiding or truncating it.
+- **Do** keep exact research categories/checklist wording and supplement them with short explanations.
+- **Do** show an editable review summary before sensitive saving, with no early mutation.
+- **Do** preserve visible keyboard focus, inert background behavior and explicit text labels.
 
 ### Don't:
 
-- **Don't** present this palette, system font stack, or folder wordmark as official BukSU/RDU identity.
-- **Don't** add decorative raster imagery or reuse evidence screenshots as shipped UI assets.
-- **Don't** replace familiar operate-mode controls with custom experimental interaction patterns.
-- **Don't** equate upload completion with approval, or monitoring with authority to review.
-- **Don't** add shadows to routine cards or invent unimplemented mobile/dialog accessibility behavior.
+- **Don't** imply that provisional styling is official university branding or demo signatures are certified signatures.
+- **Don't** shrink fields, filenames, feedback or status text to fit narrower screens.
+- **Don't** replace saved/API status values or role rules just to simplify their display labels.
+- **Don't** equate document upload with approval or monitoring with review authority.
+- **Don't** present a failed refresh as an unsaved action after the command already succeeded.
+- **Don't** add decorative shadows or imagery to ordinary working records.
