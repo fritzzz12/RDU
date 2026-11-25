@@ -1,6 +1,29 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import { AlertCircle, ArrowRight, Check, ChevronLeft, X } from "lucide-react";
 
+export class WorkspaceErrorBoundary extends React.Component {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? (
+      <main className="loading">
+        <AlertCircle size={32} />
+        <h1>We could not display this page</h1>
+        <p>
+          Your saved research is still available. Reload the page to try again.
+          Any entries you have not saved may need to be entered again.
+        </p>
+        <button className="button" onClick={() => window.location.reload()}>
+          Reload the page
+        </button>
+      </main>
+    ) : (
+      this.props.children
+    );
+  }
+}
 export const pageLabels = {
   Overview: "Home",
   "Pending actions": "Things to do",
@@ -184,7 +207,17 @@ export function SafeForm({
       ref={formRef}
       className={"confirmation-form " + (props.className || "")}
       onSubmit={submit}
-      onInvalidCapture={e=>{const issue=validate?.(new FormData(formRef.current));const label=e.target.labels?.[0]?.textContent?.replace(/\((Required|Optional)\)/g,'').trim()||'this field';setLocalError(issue||`Please check ${label}. ${e.target.validationMessage||'Complete this field before continuing.'}`);}}
+      onInvalidCapture={(e) => {
+        const issue = validate?.(new FormData(formRef.current));
+        const label =
+          e.target.labels?.[0]?.textContent
+            ?.replace(/\((Required|Optional)\)/g, "")
+            .trim() || "this field";
+        setLocalError(
+          issue ||
+            `Please check ${label}. ${e.target.validationMessage || "Complete this field before continuing."}`,
+        );
+      }}
       onChange={(e) => {
         e.currentTarget.dataset.dirty = "true";
         setLocalError("");

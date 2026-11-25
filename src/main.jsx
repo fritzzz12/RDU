@@ -43,6 +43,7 @@ import {
   SafeForm,
   ModalFrame,
   ConfirmForms,
+  WorkspaceErrorBoundary,
 } from "./ui.jsx";
 
 async function api(path, method = "GET", body) {
@@ -88,8 +89,12 @@ const time = (d) =>
 const cls = (s) => s?.toLowerCase().replaceAll(" ", "-") || "missing";
 function Badge({ children }) {
   return (
-    <span className={"badge " + cls(String(children))}>
-      {statusLabel(String(children))}
+    <span
+      className={
+        "badge " + (typeof children === "string" ? cls(children) : "count")
+      }
+    >
+      {typeof children === "string" ? statusLabel(children) : children}
     </span>
   );
 }
@@ -270,6 +275,7 @@ function ProjectFields({ data, user }) {
 }
 function App() {
   const [session, setSession] = useState(null),
+    [starting, setStarting] = useState(true),
     [data, setData] = useState(null),
     [page, setPage] = useState("Overview"),
     [projectId, setProjectId] = useState(null),
@@ -299,7 +305,8 @@ function App() {
         setSession(s);
         if (s.user) return load();
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(friendlyError(e.message)))
+      .finally(() => setStarting(false));
   }, []);
   useEffect(() => {
     if (toast) {
@@ -348,9 +355,12 @@ function App() {
     if (!data || modal || mobile) return;
     document.querySelector("main h1")?.focus();
   }, [page, projectId]);
-  function closeNav() {
+  function closeNav(restoreFocus = true) {
     setMobile(false);
-    document.querySelector(".mobile-menu")?.focus();
+    if (restoreFocus)
+      requestAnimationFrame(() =>
+        document.querySelector(".mobile-menu")?.focus(),
+      );
   }
   async function load() {
     const d = await api("/bootstrap");
@@ -403,7 +413,7 @@ function App() {
   function go(p) {
     setPage(p);
     setProjectId(null);
-    closeNav();
+    closeNav(false);
     setQ("");
     setStatus("");
   }
@@ -411,7 +421,7 @@ function App() {
     setProjectId(id);
     setTab("Checklist");
     setPhase(null);
-    closeNav();
+    closeNav(false);
   }
   const user = data?.user,
     isAdmin = user?.role === "Super Admin",
@@ -1858,7 +1868,7 @@ function App() {
                       setModal({ kind: "announcement", record: a })
                     }
                   >
-                    Edit
+                    Edit announcement
                   </button>
                 )}
               </div>
@@ -2926,7 +2936,7 @@ function App() {
       </ModalFrame>
     );
   }
-  if (!session)
+  if (!session || starting)
     return (
       <div className="loading">
         <span className="loading-dot" />
@@ -3251,4 +3261,8 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(
+  <WorkspaceErrorBoundary>
+    <App />
+  </WorkspaceErrorBoundary>,
+);

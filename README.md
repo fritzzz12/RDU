@@ -12,7 +12,7 @@ npm run build
 npm start
 ```
 
-Open **http://127.0.0.1:3001**. Choose a demo identity on the entry screen. The server binds to localhost deliberately. `PORT` changes its port and `RDMS_DATA_DIR` changes the data directory.
+Open **http://127.0.0.1:3001**. Choose a **Practice account** and select **Open practice workspace**. The server binds to localhost deliberately. `PORT` changes its port and `RDMS_DATA_DIR` changes the data directory.
 
 For development:
 
@@ -25,13 +25,17 @@ Open **http://localhost:5173** (Vite proxies `/api` to the backend on port 3001)
 ## Suggested demonstration
 
 1. Choose **Morgan Santos — Research Director** to see university-wide dashboards, all five research categories, reports, archive and announcements. No account-management or review authority is granted.
-2. Switch identity using the header logout icon. Choose **Maya Dela Cruz — Researcher** (`researcher-1`). Open *Community early-warning networks* and its checklist. The Capsule Proposal needs revision.
-3. Upload a valid PDF and type the submission signature. Prior versions remain in the Documents tab. A signed submission is **not** an approval.
-4. Switch to **Elena Cruz — Department Head** (`head-1`, Technology). Review the new PDF; approve, request revision or reject with feedback and a typed signature. Other departments' records are inaccessible.
-5. Supply and approve the remaining current-phase requirements, or explicitly mark a conditional item not applicable with a reason. **Review & advance** unlocks only after all items pass; the server rechecks them. A mistaken conditional exclusion can be restored with **Mark applicable**.
+2. Select **Switch account** in the header. Choose **Maya Dela Cruz — Researcher** (`researcher-1`). Open *Community early-warning networks* and **Required documents**. The Capsule Proposal shows **Changes needed**.
+3. Select **Upload a new version**, choose a valid PDF and type your full name. Select **Review before saving**, check the summary, then **Confirm and submit document**. Go back to edit without losing the selected file if needed. Earlier versions remain in the Documents tab. A signed submission is **not** an approval.
+4. Switch to **Elena Cruz — Department Head** (`head-1`, Technology). Open **Review documents** and the new PDF. Approve, ask for changes or do not accept it, with feedback and a typed signature. Review the summary before confirming the decision. Other departments' records are inaccessible.
+5. Supply and approve the remaining current-stage requirements, or mark a conditional document as not needed with a reason. **Approve the next stage** unlocks only after all items pass; the server rechecks them after confirmation. A mistaken exclusion can be restored with **Require this document**.
 6. Use **Tessa Manalo** (`researcher-15`) or **Adrian Velasco** (`researcher-16`) to create new research without violating the existing-study restriction. Select any of the five types and a department-specific academic program.
 7. Choose **Alex Rivera — Super Admin** to approve Sam Perez's Pending account, change account status/role/department, inspect audit events, and configure safe institution settings. Pending/suspended/deactivated users cannot enter protected APIs.
 8. Export a filtered report as CSV or **Print / Save PDF**. All 13 report selections derive appropriate data; CSV and preview share the same report builder.
+
+## Beginner-friendly interface
+
+All pages use 16px working text, at least 14px supporting text, readable labels and generous controls. Home, Things to do, Messages and the other navigation labels use plain language. Tables reflow into labeled records instead of requiring sideways scrolling. Sensitive forms show a review summary before saving, and closing a changed form asks before discarding entries. All existing data fields, role checks, backend values and official checklist labels are preserved. See `docs/UI-ACCESSIBILITY.md` for details and `src/SPEC.md` for interface contracts.
 
 ## Source precedence and checklist fidelity
 
@@ -72,7 +76,7 @@ These are **not claimed complete**:
 - **Google SSO and email:** no live Google authentication, email sender, retry queue or delivery status service is wired. Demo identity selection is explicitly not real authentication. In-app notifications are persistent local records; no email is claimed sent.
 - **Identity/security:** anyone using this local demo can choose an active demo identity. Do not expose it publicly or upload confidential documents. Production requires real identity verification, restrictive access policy, HTTPS, rate limiting, retention, backups and operational security review.
 - **Branding:** no official BukSU/RDU logo, favicon, approved color values or font assets were supplied. The shown navy/teal visual language is provisional, not official branding.
-- **Policy:** Heads-only review and phase authority is the user-approved demo policy. Optional Reviewer delegation, per-document confidentiality, arbitrary per-user permission overrides, and a production approval-policy editor are not implemented. Roles & Permissions displays the enforced fixed matrix.
+- **Policy:** Heads-only review and phase authority is the user-approved demo policy. Optional Reviewer delegation, per-document confidentiality, arbitrary per-user permission overrides, and a production approval-policy editor are not implemented. **Access and permissions** displays the enforced fixed matrix.
 - **Directory/profile:** departments/programs are seeded reference catalogs, not a directory CRUD/import module. Faculty profiles contain synthetic names/email, department and research participation; additional contact/social details are not fabricated.
 - **News:** plain text rather than a rich-text/image editor; no graphic/document attachments or scheduling service. Publication transitions and prior content are audited.
 - **Notifications:** search, type and unread filtering are implemented; full date/priority/action-state filtering and account/announcement-specific deep links remain absent. In-app state refreshes after actions or page reload, not via realtime push.
@@ -110,6 +114,6 @@ npx playwright test
 Playwright uses temporary isolated data and an ephemeral local server; it does not mutate your demo database. If using an existing Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to its executable path. The verified environment used an already-installed headless Chromium because the new Playwright package's matching bundled browser was absent.
 
 - **12 Node tests pass:** authorization/scoping, accounts, PDF integrity/versioning, concurrent submissions, retry idempotency, all three phase transitions, persistence and specialized reports.
-- **6 browser tests pass:** all authorized navigation, submission, PDF correction/review, account approval, announcement publication, rejection/resubmission and mobile keyboard/navigation/overflow.
+- **22 browser tests pass:** the original navigation/submission/review/account/announcement flows plus all-role/module reflow, 320–1440px layouts, confirmation without early mutation, retained edits/files, dirty-close/focus, validation, exact checklist wording, phase gating and mandatory axe-core scans of Home, checklist and inline review. The 720px layout check represents a 1440px viewport at 200% zoom-equivalent reflow; it is not a claim of testing every assistive technology.
 - Production build passes; `npm audit` reported zero dependency vulnerabilities at installation.
 - Desktop (1440px) and mobile (390px) screenshots live under `.thinkrail/context/screenshots/` (local evidence, not shipping assets).

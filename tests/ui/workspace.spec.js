@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import { createApp } from "../../server/index.js";
 import { syntheticPdf } from "../../server/store.js";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -235,6 +236,16 @@ test("new project form uses department-specific programs and persists submission
   await page
     .getByLabel("College department", { exact: false })
     .selectOption(owners[0].department);
+  const bootstrap = await (
+    await page.request.get(url + "/api/bootstrap")
+  ).json();
+  await expect(
+    page.getByLabel("Academic program").locator("option"),
+  ).toHaveText(
+    bootstrap.programs
+      .filter((program) => program.department === owners[0].department)
+      .map((program) => program.name),
+  );
   await page
     .getByLabel("Research owner", { exact: false })
     .selectOption(owners[0].id);
@@ -414,10 +425,12 @@ async function assertReadableReflow(page) {
       });
     return errors;
   });
-  expect(
-    issues,
-    `Readability/reflow at ${page.viewportSize().width}px on ${await page.locator("main h1.page-title-focus").textContent()}`,
-  ).toEqual([]);
+  expect
+    .soft(
+      issues,
+      `Readability/reflow at ${page.viewportSize().width}px on ${await page.locator("main h1.page-title-focus").textContent()}`,
+    )
+    .toEqual([]);
 }
 
 const sharedModules = [
@@ -457,6 +470,9 @@ for (const identity of ["admin", "director", "head-1", "researcher-1"]) {
           fullPage: true,
         });
     }
+    await navigate(page, "Research projects");
+    await page.locator(".project-link").first().click();
+    await assertProjectReflow(page);
     if (identity !== "admin") {
       await page
         .getByRole("button", { name: "Open menu", exact: true })
@@ -485,8 +501,28 @@ for (const width of [1440, 1024, 320, 720]) {
     await navigate(page, "Research projects");
     await page.locator(".project-link").first().click();
     await expect(page.locator(".lifecycle")).toBeVisible();
-    await assertReadableReflow(page);
+    await assertProjectReflow(page);
   });
+}
+
+async function assertProjectReflow(page) {
+  for (let phase = 0; phase < checklist.length; phase++) {
+    await page.locator(".lifecycle button").nth(phase).click();
+    await expect(
+      page.getByRole("heading", { name: checklist[phase].name, exact: true }),
+    ).toBeVisible();
+    await assertReadableReflow(page);
+  }
+  for (const title of ["Documents", "Project history", "Project details"]) {
+    await page
+      .locator(".tabs")
+      .getByRole("button", {
+        name: title === "Documents" ? /^Documents/ : title,
+        exact: true,
+      })
+      .click();
+    await assertReadableReflow(page);
+  }
 }
 
 async function openCorrection(page) {
@@ -650,6 +686,9 @@ test("official checklist wording is retained in every research phase", async ({
   await expect(phaseButtons).toHaveCount(3);
   for (let phase = 0; phase < checklist.length; phase++) {
     await phaseButtons.nth(phase).click();
+    await expect(page.locator(".checklist-heading .badge")).toHaveText(
+      /^\d+\s*\/\s*\d+\s+complete$/,
+    );
     await expect(
       page.getByRole("heading", { name: checklist[phase].name, exact: true }),
     ).toBeVisible();
@@ -743,4 +782,71 @@ test("head cannot advance until authoritative server requirements are ready; app
   expect(
     (await response.json()).projects.find((p) => p.id === project.id).phase,
   ).toBe(1);
+});
+
+for (const width of [390, 320, 720]) {
+  test(`upload form and inline review reflow at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await login(page, "researcher-1");
+    await openCorrection(page);
+    await assertReadableReflow(page);
+    await page.getByLabel("PDF document").setInputFiles({
+      name: "mobile-evidence.pdf",
+      mimeType: "application/pdf",
+      buffer: syntheticPdf("Mobile evidence for review"),
+    });
+    await page
+      .getByLabel("Version / correction note")
+      .fill("A correction note remains readable on a narrow screen.");
+    await page
+      .getByRole("button", { name: "Review before saving", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Check before saving", exact: true }),
+    ).toBeVisible();
+    await assertReadableReflow(page);
+    await expectFocusContained(page, page.getByRole("dialog"));
+    await page
+      .getByRole("button", { name: "Go back and edit", exact: true })
+      .click();
+    await expect(page.getByLabel("Version / correction note")).toHaveValue(
+      "A correction note remains readable on a narrow screen.",
+    );
+  });
+}
+
+// No dependency changes: enable a real axe scan automatically when the host supplies it.
+test("axe WCAG AA checks on home, checklist and inline review", async ({
+  page,
+}) => {
+  await login(page, "researcher-1");
+  const scan = async () => {
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  };
+  await scan();
+  await navigate(page, "Research projects");
+  await page.locator(".project-link").first().click();
+  await scan();
+  await page
+    .locator(".requirement")
+    .filter({ hasText: "Capsule Proposal of Faculty/Researcher" })
+    .getByRole("button", { name: "Upload a new version", exact: true })
+    .click();
+  await page.getByLabel("PDF document").setInputFiles({
+    name: "axe-evidence.pdf",
+    mimeType: "application/pdf",
+    buffer: syntheticPdf("Accessible review"),
+  });
+  await page
+    .getByRole("button", { name: "Review before saving", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Check before saving", exact: true }),
+  ).toBeVisible();
+  await scan();
 });
