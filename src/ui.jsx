@@ -53,6 +53,8 @@ export function friendlyError(message) {
     return "Explain what needs to be corrected in Review feedback before saving this decision.";
   if (/active demo session|Only active demo accounts/.test(message))
     return "You cannot use this account right now. Ask an administrator to check that it is approved and active, then sign in again.";
+  if (/submission key was already used/.test(message))
+    return "This upload attempt has already been saved with different details. Close this form and choose Upload a new version to submit a different file.";
   if (/Failed to fetch|NetworkError|Load failed/.test(message))
     return "We could not connect. Check your connection and try again. Your entries are still here.";
   return (
@@ -72,7 +74,7 @@ const nodeText = (node) =>
     .join(" ")
     .replace(/\s+/g, " ")
     .trim();
-export function RecordTable({ children, label = "Records" }) {
+export function RecordTable({ children, label = "Records", className }) {
   const sections = React.Children.toArray(children);
   const head = sections.find((s) => s.type === "thead");
   const headingRow = React.Children.toArray(head?.props.children).find(
@@ -82,7 +84,7 @@ export function RecordTable({ children, label = "Records" }) {
     (c) => nodeText(c.props.children) || "Action",
   );
   return (
-    <table aria-label={label}>
+    <table aria-label={label} className={className}>
       {sections.map((section, index) => {
         if (!React.isValidElement(section)) return section;
         return React.cloneElement(
@@ -182,6 +184,7 @@ export function SafeForm({
       ref={formRef}
       className={"confirmation-form " + (props.className || "")}
       onSubmit={submit}
+      onInvalidCapture={e=>{const issue=validate?.(new FormData(formRef.current));const label=e.target.labels?.[0]?.textContent?.replace(/\((Required|Optional)\)/g,'').trim()||'this field';setLocalError(issue||`Please check ${label}. ${e.target.validationMessage||'Complete this field before continuing.'}`);}}
       onChange={(e) => {
         e.currentTarget.dataset.dirty = "true";
         setLocalError("");
@@ -332,6 +335,15 @@ export function ModalFrame({
   useEffect(() => {
     if (discard) ref.current?.querySelector(".discard-prompt button")?.focus();
   }, [discard]);
+  function keepEditing() {
+    setDiscard(false);
+    requestAnimationFrame(() => {
+      const target = focusable(ref.current).find((el) =>
+        el.closest(".modal-body"),
+      );
+      (target || ref.current.querySelector(".modal-header button"))?.focus();
+    });
+  }
   function close() {
     if (busy) return;
     if (ref.current?.querySelector('form[data-dirty="true"]')) setDiscard(true);
@@ -341,7 +353,7 @@ export function ModalFrame({
     if (e.key === "Escape") {
       e.stopPropagation();
       e.preventDefault();
-      if (discard) setDiscard(false);
+      if (discard) keepEditing();
       else close();
     }
     if (e.key === "Tab") {
@@ -395,7 +407,7 @@ export function ModalFrame({
               <button
                 type="button"
                 className="button secondary"
-                onClick={() => setDiscard(false)}
+                onClick={keepEditing}
               >
                 Keep editing
               </button>

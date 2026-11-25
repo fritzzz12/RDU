@@ -289,7 +289,7 @@ strong {
   flex-shrink: 0;
 }
 .nav-close,
-.mobile-menu {
+.button.mobile-menu {
   display: none;
 }
 .main-shell {
@@ -995,6 +995,39 @@ textarea[aria-invalid="true"] {
 }
 
 /* Fixed-layout desktop tables wrap evidence instead of scrolling it away. */
+.projects-table th:nth-child(1) {
+  width: 30%;
+}
+.projects-table th:nth-child(2) {
+  width: 20%;
+}
+.projects-table th:nth-child(3) {
+  width: 15%;
+}
+.projects-table th:nth-child(4) {
+  width: 10%;
+}
+.projects-table th:nth-child(5) {
+  width: 11%;
+}
+.projects-table th:nth-child(6) {
+  width: 14%;
+}
+.documents-table th:nth-child(1) {
+  width: 29%;
+}
+.documents-table th:nth-child(2) {
+  width: 24%;
+}
+.documents-table th:nth-child(3) {
+  width: 17%;
+}
+.documents-table th:nth-child(4) {
+  width: 15%;
+}
+.documents-table th:nth-child(5) {
+  width: 15%;
+}
 .table-panel {
   padding: 0;
 }
@@ -2331,7 +2364,7 @@ th > * {
     background: #29455f;
     color: white;
   }
-  .mobile-menu {
+  .button.mobile-menu {
     display: inline-flex;
   }
   .main-shell {
@@ -2350,7 +2383,7 @@ th > * {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   /* Keep native table markup and accessible headings; expose labels on each cell. */
   .table-wrap table,
   .table-wrap tbody {

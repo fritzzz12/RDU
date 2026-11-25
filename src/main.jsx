@@ -17,7 +17,6 @@ import {
   Plus,
   ArrowUpRight,
   ChevronRight,
-  ChevronDown,
   Check,
   Clock,
   Download,
@@ -31,7 +30,6 @@ import {
   CheckCircle2,
   Building2,
   ArrowRight,
-  Filter,
 } from "lucide-react";
 import "./styles.css";
 import { buildReport, reportNames } from "../shared/reporting.js";
@@ -65,11 +63,6 @@ async function api(path, method = "GET", body) {
   }
   return r.status === 204 ? null : r.json();
 }
-const shortType = (t) =>
-  t
-    ?.replace(" Research Project", "")
-    .replace("Equivalent Teaching", "Equivalent Teaching (ETL)")
-    .replace(" (ETL) (ETL)", " (ETL)");
 const initials = (n) =>
   n
     ?.split(" ")
@@ -288,6 +281,7 @@ function App() {
     [year, setYear] = useState(""),
     [status, setStatus] = useState(""),
     [modal, setModal] = useState(null),
+    [reviewDecision, setReviewDecision] = useState("Approved"),
     [error, setError] = useState(""),
     [toast, setToast] = useState(""),
     [busy, setBusy] = useState(false),
@@ -348,6 +342,7 @@ function App() {
   }, [smallScreen]);
   useEffect(() => {
     setError("");
+    setReviewDecision("Approved");
   }, [modal?.kind, modal?.record?.id, modal?.item?.id]);
   useEffect(() => {
     if (!data || modal || mobile) return;
@@ -550,7 +545,7 @@ function App() {
   function projectTable(list = filtered, compact = false) {
     return list.length ? (
       <div className="table-wrap">
-        <RecordTable label="Research projects">
+        <RecordTable label="Research projects" className="projects-table">
           <thead>
             <tr>
               <th>Research project</th>
@@ -656,7 +651,7 @@ function App() {
     return (
       <>
         {header(
-          isResearcher ? "Your research, in focus" : "Research overview",
+          "Overview",
           isResearcher
             ? "Your studies, requirements, and next steps in one place."
             : "A clear view of research, from proposal to impact.",
@@ -1009,15 +1004,21 @@ function App() {
               onClick={() => setPhase(i)}
               className={
                 (current === i ? "active " : "") +
-                (i < project.phase ? "complete" : "")
+                (i < project.phase || project.status !== "Ongoing"
+                  ? "complete"
+                  : "")
               }
             >
               <span className="stage-marker">
-                {i < project.phase ? <Check size={18} /> : i + 1}
+                {i < project.phase || project.status !== "Ongoing" ? (
+                  <Check size={18} />
+                ) : (
+                  i + 1
+                )}
               </span>
               <span>
                 <small>
-                  {i < project.phase
+                  {i < project.phase || project.status !== "Ongoing"
                     ? "Completed"
                     : i === project.phase
                       ? "Current stage"
@@ -1112,6 +1113,12 @@ function App() {
                       </span>
                       <div className="requirement-copy">
                         <b>{item.label}</b>
+                        {item.conditional && req.status === "Missing" && (
+                          <small className="status-help">
+                            If this does not apply to your study, ask your
+                            Department Head to mark it as not needed.
+                          </small>
+                        )}
                         {req.feedback && (
                           <small className="feedback">
                             Feedback: {req.feedback}
@@ -1209,14 +1216,18 @@ function App() {
             <section className="advance-panel">
               <div>
                 <h3>
-                  {ready(project)
-                    ? "Ready for the next step"
-                    : "What needs to happen before continuing"}
+                  {project.status !== "Ongoing"
+                    ? "This research is complete"
+                    : ready(project)
+                      ? "Ready for the next step"
+                      : "What needs to happen before continuing"}
                 </h3>
                 <p>
-                  {ready(project)
-                    ? "All required documents for the current stage have been approved or marked as not needed. A Department Head can now confirm the next step."
-                    : "Check the current stage for documents that have not been submitted, need changes, or are waiting for review. Your Department Head must approve all required documents before the research can continue."}
+                  {project.status !== "Ongoing"
+                    ? "The research stages are complete. You can still view the documents and saved decisions."
+                    : ready(project)
+                      ? "All required documents for the current stage have been approved or marked as not needed. A Department Head can now confirm the next step."
+                      : "Check the current stage for documents that have not been submitted, need changes, or are waiting for review. Your Department Head must approve all required documents before the research can continue."}
                 </p>
               </div>
               {isHead && project.status === "Ongoing" && (
@@ -1295,7 +1306,10 @@ function App() {
       <section className="panel table-panel">
         {docs.length ? (
           <div className="table-wrap">
-            <RecordTable label="Submitted documents">
+            <RecordTable
+              label="Submitted documents"
+              className="documents-table"
+            >
               <thead>
                 <tr>
                   <th>Document and version</th>
@@ -1525,26 +1539,32 @@ function App() {
           </button>,
         )}
         <div className="filters">
-          <div className="search">
-            <Search size={16} />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search notifications"
-              aria-label="Search notifications"
-            />
-          </div>
-          <select
-            aria-label="Notification filter"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="">All updates</option>
-            <option>Unread</option>
-            {[...new Set(notifications.map((n) => n.type))].map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
+          <label className="filter-field">
+            <span>Find a message</span>
+            <div className="search">
+              <Search size={18} />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search messages"
+                aria-label="Search notifications"
+              />
+            </div>
+          </label>
+          <label className="filter-field">
+            <span>Messages to show</span>
+            <select
+              aria-label="Notification filter"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="">All updates</option>
+              <option>Unread</option>
+              {[...new Set(notifications.map((n) => n.type))].map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </select>
+          </label>
         </div>
         <section className="panel notification-list">
           {list.length ? (
@@ -1575,7 +1595,10 @@ function App() {
               </button>
             ))
           ) : (
-            <Empty title="No notifications" />
+            <Empty
+              title="No messages to show"
+              text="Messages about submissions, reviews, and account changes will appear here."
+            />
           )}
         </section>
       </>
@@ -1609,15 +1632,18 @@ function App() {
           ),
         )}
         <div className="filters">
-          <div className="search">
-            <Search size={16} />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search name, email or department"
-              aria-label="Search faculty or users"
-            />
-          </div>
+          <label className="filter-field">
+            <span>Find a person</span>
+            <div className="search">
+              <Search size={18} />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Name, email or department"
+                aria-label="Search faculty or users"
+              />
+            </div>
+          </label>
         </div>
         <section className="panel table-panel">
           <div className="table-wrap">
@@ -2416,7 +2442,12 @@ function App() {
             >
               <div className="form-grid">
                 <Field label="Decision">
-                  <select name="decision" required>
+                  <select
+                    name="decision"
+                    required
+                    value={reviewDecision}
+                    onChange={(e) => setReviewDecision(e.target.value)}
+                  >
                     <option value="Approved">Approve this document</option>
                     <option value="Needs Revision">Ask for changes</option>
                     <option value="Rejected">
@@ -2442,6 +2473,7 @@ function App() {
               >
                 <textarea
                   name="feedback"
+                  required={reviewDecision !== "Approved"}
                   rows="3"
                   placeholder="Explain your evaluation and any required corrections."
                 />
@@ -3009,7 +3041,11 @@ function App() {
     );
   return (
     <div className="app-shell">
-      <a className="skip-link" href="#main-content">
+      <a
+        className="skip-link"
+        href="#main-content"
+        inert={Boolean(modal) || (smallScreen && mobile)}
+      >
         Skip to main content
       </a>
       {mobile && <div className="nav-overlay" onClick={closeNav} />}
@@ -3088,8 +3124,12 @@ function App() {
             <button className="text-button" onClick={() => go("Overview")}>
               Home
             </button>
-            <ChevronRight size={14} />
-            <b>{project ? "Project details" : pageLabels[page] || page}</b>
+            {(project || page !== "Overview") && (
+              <>
+                <ChevronRight size={14} />
+                <b>{project ? "Project details" : pageLabels[page] || page}</b>
+              </>
+            )}
           </div>
           <div className="topbar-actions">
             <span className="demo-label">Practice system</span>
@@ -3190,7 +3230,11 @@ function App() {
       </div>
       {renderModal()}
       {toast && (
-        <div className="toast" role="status">
+        <div
+          className="toast"
+          role="status"
+          inert={Boolean(modal) || (smallScreen && mobile)}
+        >
           <CheckCircle2 size={19} />
           {toast}
           <button
