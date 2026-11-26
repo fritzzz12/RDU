@@ -1,63 +1,57 @@
 ---
-name: RDMS Accessible Research wayfinding
-description: Beginner-friendly navy-and-teal research workspace with readable text, spacious controls and guided decisions.
+name: RDMS White with Indigo and Gold
+description: White-dominant accessible research workspace with indigo navigation and gold accents.
 colors:
-  primary: "#176b77"
-  primary-hover: "#115b66"
-  nav: "#142b46"
-  nav-text: "#d8e6f1"
-  nav-active: "#2a465f"
-  ground: "#f4f7fa"
-  surface: "#ffffff"
-  ink: "#233348"
-  muted: "#536b82"
-  border: "#cbd6df"
-  divider: "#e1e8ee"
-  field-border: "#8296a7"
-  focus: "#09677c"
-  danger: "#9b3038"
-  secondary-button-text: "#235969"
-  pending: "#795213"
-  pending-bg: "#fff3d9"
-  approved: "#235f46"
-  approved-bg: "#e7f3ed"
-  correction: "#963139"
-  correction-bg: "#fbeceb"
-  missing: "#465d73"
-  missing-bg: "#edf1f6"
-  review-bg: "#f5f9fa"
-  review-border: "#b8cdd8"
-  review-text: "#35576b"
-  chart: "#347e88"
+  midnight-indigo: "#100B38"
+  royal-indigo: "#1C1554"
+  slate-violet: "#2C2666"
+  gold: "#F5CE56"
+  cream-gold: "#FCE38A"
+  white: "#FFFFFF"
+  lavender: "#C8C4E0"
+  crimson: "#C5192D"
+  soft-surface: "#F5F4FA"
+  muted-ink: "#514B70"
+  border: "rgb(28 21 84 / 20%)"
+  divider: "rgb(28 21 84 / 14%)"
+  field-border: "rgb(28 21 84 / 60%)"
+  image-overlay: "rgb(28 21 84 / 88%)"
+  scrim: "rgb(16 11 56 / 82%)"
 typography:
   headline:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
+    fontFamily: '"Montserrat", "Poppins", sans-serif'
     fontSize: "clamp(1.75rem, 2.4vw, 2.125rem)"
-    fontWeight: 700
+    fontWeight: 800
     lineHeight: 1.25
-    letterSpacing: "-0.02em"
+    letterSpacing: "0.03em"
+  display:
+    fontFamily: '"Montserrat", "Poppins", sans-serif'
+    fontSize: "clamp(1.875rem, 3vw, 2.5rem)"
+    fontWeight: 900
+    lineHeight: 1.35
+    letterSpacing: "0.03em"
   title:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
+    fontFamily: '"Plus Jakarta Sans", "DM Sans", sans-serif'
     fontSize: "1.375rem"
-    fontWeight: 650
+    fontWeight: 700
     lineHeight: 1.4
   section:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
+    fontFamily: '"Plus Jakarta Sans", "DM Sans", sans-serif'
     fontSize: "1.125rem"
-    fontWeight: 650
+    fontWeight: 700
     lineHeight: 1.5
   body:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
+    fontFamily: '"Plus Jakarta Sans", "DM Sans", sans-serif'
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.6
   label:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
+    fontFamily: '"Plus Jakarta Sans", "DM Sans", sans-serif'
     fontSize: "1rem"
-    fontWeight: 650
-    lineHeight: 1.6
+    fontWeight: 700
+    lineHeight: 1.5
   supporting:
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif'
+    fontFamily: '"Plus Jakarta Sans", "DM Sans", sans-serif'
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.6
@@ -77,186 +71,207 @@ spacing:
   desktop-gutter: "clamp(20px, 2.5vw, 40px)"
 components:
   button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.surface}"
+    backgroundColor: "{colors.gold}"
+    textColor: "{colors.midnight-indigo}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
     padding: "11px 18px"
   button-primary-hover:
-    backgroundColor: "{colors.primary-hover}"
+    backgroundColor: "{colors.cream-gold}"
   button-secondary:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.secondary-button-text}"
+    backgroundColor: "{colors.white}"
+    textColor: "{colors.midnight-indigo}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
     padding: "11px 18px"
   input-field:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.white}"
+    textColor: "{colors.midnight-indigo}"
     typography: "{typography.body}"
     rounded: "{rounded.field}"
-    padding: "11px 13px"
+    padding: "11px 12px"
   navigation-active:
-    backgroundColor: "{colors.nav-active}"
-    textColor: "{colors.surface}"
+    backgroundColor: "{colors.slate-violet}"
+    textColor: "{colors.gold}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
   status-pending:
-    backgroundColor: "{colors.pending-bg}"
-    textColor: "{colors.pending}"
+    backgroundColor: "{colors.soft-surface}"
+    textColor: "{colors.royal-indigo}"
+    typography: "{typography.supporting}"
+  status-correction:
+    backgroundColor: "{colors.crimson}"
+    textColor: "{colors.white}"
     typography: "{typography.supporting}"
   panel:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.white}"
     rounded: "{rounded.panel}"
     padding: "{spacing.panel}"
   review-summary:
-    backgroundColor: "{colors.review-bg}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.white}"
+    textColor: "{colors.midnight-indigo}"
     rounded: "{rounded.review}"
     padding: "{spacing.panel}"
   dialog:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.white}"
     rounded: "{rounded.dialog}"
     width: "720px"
 ---
 
-# Design System: RDMS Accessible Research wayfinding
+# Design System: RDMS White with Indigo and Gold
 
 ## Overview
 
 **Creative North Star: "Research wayfinding"**
 
-Make the next research action understandable without requiring technical knowledge. This user-approved accessibility evolution retains the navy navigation, cool light workspace and teal actions, while replacing the predecessor's tiny type and compact controls with readable text, clear instructions and comfortable spacing.
+The user's explicit indigo-and-gold visual direction restyles the existing beginner-friendly research workspace without changing its composition, routes, forms or business rules. White is the dominant page, card, table, form and dialog surface. Midnight navigation/footer bases retain the indigo identity, while soft violet-white containers distinguish secondary information. Gold remains on primary actions, progress and selected highlights. Headings, links and values use indigo on white rather than low-contrast gold.
 
-The visual language serves people operating a research-management system in everyday office and mobile settings. Familiar controls and task-based labels take priority over novelty. The official research checklist and category names remain intact; short explanations make them easier to use.
+All existing readable sizing, generous controls, visible guidance, exact research requirements and responsive records remain. This is a user-specified theme, not a claim of official Bukidnon State University brand approval. The supplied BGROUND.jpg photograph is used only on the sign-in panel with the requested royal-indigo overlay; the institutional heading and recently removed stage strip stay as the user requested.
 
-This is provisional prototype styling, not official BukSU/RDU branding. No official university logo, font or color guide was supplied. There are no shipped raster design assets. Evidence is the current `src/styles.css`, `src/main.jsx`, `src/ui.jsx`, approved `accessible-after.html` preview and the accessible-prefixed desktop/mobile screenshots in the local context directory.
+Evidence: `src/theme.css`, `src/fonts.css`, `src/styles.css`, bundled font sources/licenses, unchanged React markup and the theme-prefixed before/after captures under the local context directory. Palette/font values are centralized in the theme stylesheet; component/layout rules reference them instead of retaining the previous hardcoded navy/teal/light palette.
 
 **Key Characteristics:**
 
-- Plain-language navigation and named actions, with every original role-visible feature retained.
-- Readable working text, quieter supporting information and visible status wording.
-- Responsive labeled records instead of sideways-scrolling tables or hidden columns.
-- Guided review, editing and explicit confirmation before sensitive decisions.
+- Dominant white working surfaces with high-contrast indigo/dark-violet copy.
+- Indigo navigation and retained sign-in photograph; gold primary actions and selected highlights.
+- Montserrat display headings with Plus Jakarta Sans working typography.
+- Existing accessible navigation, reflow and explicit-confirmation workflows preserved.
 
 ## Colors
 
-Navy establishes stable wayfinding; teal identifies action and selection; white and cool near-white surfaces keep long research records readable.
+The user's follow-up makes white dominant. The original eight brand colors remain, with soft white-violet (#F5F4FA) secondary surfaces and dark muted ink (#514B70) for readable supporting copy. Surface and text tokens are semantic; dark navigation/photo/toast/footer regions scope their inverse tokens separately.
 
 ### Primary
 
-- **Research Teal** (`primary`, `primary-hover`): buttons, links, selected controls and task actions.
-- **Wayfinding Navy** (`nav`, `nav-text`, `nav-active`): persistent menu and login story, with lighter selected rows and high-contrast text.
-- **Measured Teal** (`chart`): data bars and progress, subordinate to written labels and counts.
+- **Deep Midnight Indigo** (`midnight-indigo`): deepest backgrounds, navigation and footer bases; also text on gold buttons.
+- **Royal Indigo** (`royal-indigo`): headings, links, statuses, focus and the sign-in image overlay.
+- **Muted Slate Violet** (`slate-violet`): selected destinations and secondary containers in dark brand regions.
+- **Warm Amber Gold** (`gold`): primary action fill, progress and active navigation highlights.
+- **Bright Cream Gold** (`cream-gold`): primary-action hover and focus in dark regions.
 
 ### Secondary
 
-- **Pending Amber** (`pending`, `pending-bg`): in-progress and waiting-for-review information.
-- **Approval Green** (`approved`, `approved-bg`): completed, approved, active and published states.
-- **Correction Red** (`correction`, `correction-bg`, `danger`): changes needed, rejected/suspended states and leave-without-saving actions.
+- **SDG Crimson Red** (`crimson`): specific correction/rejection/suspension badges and unread-count/status accents. Error boundaries may use it to signal a failure, but it is not a general card color. Text on crimson is white, not low-contrast lavender or gold.
 
 ### Neutral
 
-- **Document Ink** (`ink`) is primary copy; **Evidence Slate** (`muted`) is the supporting text color. Supporting information is not made faint to create hierarchy.
-- **Cool Ground** and **White Surface** (`ground`, `surface`) separate the working area from panels.
-- **Cool Rule** (`border`, `divider`, `field-border`) separates sections and makes controls identifiable.
-- **Review Paper** (`review-bg`, `review-border`, `review-text`) distinguishes a confirmation summary without implying that data has already been saved.
+- **Pure White** (`white`): dominant working surfaces and inverse text on dark brand regions.
+- **Soft Lavender Gray** (`lavender`): supporting copy in dark brand regions. Working metadata and placeholders use dark muted ink on white.
+- **Borders and image treatment:** border/divider/field-border use royal indigo at different opacity on light surfaces, with lavender equivalents in dark regions. The supplied photo uses royal indigo at (88%) opacity. Modal/drawer scrims use midnight indigo; shadows are a transparent midnight derivative.
 
-**The Evidence State Rule.** Keep status wording visible alongside color; an uploaded document is not an approved document.
+**The Evidence State Rule.** Keep written statuses visible alongside color; palette simplification must not change or obscure stored approval states.
 
 ## Typography
 
-**Display and Body Font:** Segoe UI with platform/system and Arial fallbacks. No external webfont or institutional font is installed.
+**Display Font:** Montserrat, with Poppins as the loaded fallback.
+**Body, Label and Statistics Font:** Plus Jakarta Sans, with DM Sans as the loaded fallback.
+
+Font faces are sourced from Google Fonts and self-hosted WOFF2 assets, with Latin and Latin-extended coverage and individual SIL Open Font License files. Runtime rendering does not require third-party font requests. `font-display: swap` keeps content available while local assets load.
 
 ### Hierarchy
 
-- **Headline:** the fluid `headline` role provides page orientation without overwhelming task content.
-- **Title:** `title` identifies sections and review summaries.
-- **Section:** `section` provides fieldset legends and smaller task groups.
-- **Body and label:** `body` and `label` are the normal readable working scale. Inputs and file controls stay at this scale rather than shrinking on mobile.
-- **Supporting:** `supporting` is the minimum for metadata, hints, dates, status badges and filter explanations. Important requirements, table values and buttons remain at the body scale.
+- **Display:** Montserrat (900) for the major sign-in institutional heading, preserving its proper-name casing and slight tracking; do not force uppercase.
+- **Headline:** Montserrat (800), used for page headings and wordmark; static page names use Title Case. User-entered names and titles retain their original casing.
+- **Title / section:** Plus Jakarta Sans (700) organizes panels, fieldsets and review sections; section headings use indigo on white.
+- **Body:** Plus Jakarta Sans (400), preserving the normal (16px) working size and generous line height.
+- **Labels / statistics:** Plus Jakarta Sans (600/700), not a separate decorative display face.
+- **Supporting:** the existing (14px) minimum remains for dates, hints and metadata. Explanatory sub-notes and italic elements use the actual (400 italic) face, with dark indigo on light surfaces.
 
 **The Readable Evidence Rule.** Never shrink information to fit the screen. Reflow the record and wrap the content instead.
 
-Paragraphs and explanations use generous line height and bounded reading measures. Official checklist headings retain their source wording/capitalization; ordinary menu and action labels use sentence case. Numeric data uses aligned tabular presentation where appropriate.
-
 ## Layout
 
-The desktop shell has a persistent navy rail (282px), a main-area offset matching that rail, and fluid content gutters. The header wraps when its account, messages and location controls need more room; labels are not replaced with unexplained icons. Most panels use the shared panel inset and section gaps.
+This is a theme-only change. The established desktop rail (282px), fluid gutters, card insets, control sizes and all responsive breakpoints are retained. Font metrics can cause natural text wrapping, not hidden fields or route changes.
 
-- At widths up to (1250px), overview/news move to one column and metrics become two columns.
-- At widths up to (1100px), standard tables reflow into labeled records. Semantic headings remain available to assistive technology; each value has an explicit mobile label.
-- At widths up to (1000px), the sidebar becomes a dismissible drawer and the content offset disappears.
-- At widths up to (760px), forms, actions, phase controls and other groups adopt a single-column layout where needed. Small-screen confirmation actions remain reachable through internal dialog scrolling.
-- At widths up to (400px), gutters/insets reduce without shrinking the readable type scale.
-- Reports with more than seven columns stack their records at every width rather than hiding columns or requiring sideways scrolling.
+- At (1250px), overview/news move to one column and metrics to two columns.
+- At (1100px), standard tables reflow into labeled records with semantic headings retained.
+- At (1000px), navigation becomes the existing dismissible drawer.
+- At (760px), forms/actions/phases adopt single-column layouts where needed.
+- At (400px), gutters reduce without reducing the readable text scale.
+- Wide reports remain stacked rather than hiding columns or requiring horizontal scrolling.
 
-The vertical research phase path on small screens is the same three-stage selector as desktop, not a separate workflow. Monitoring and evaluation remains cross-cutting below the evidence.
+The existing three-stage research selector and cross-cutting monitoring content remain unchanged inside project screens. The sign-in page does not reintroduce the removed decorative phase strip or RDMS wordmark. Its heading and description are centered in the photo panel. The sidebar retains RDMS without a trailing period, with the supplied `RDU LOGO.png` replacing the folder symbol; contain-fit the full logo at 80×40px without recoloring or cropping.
 
-Print hides interactive chrome and includes the report identity and filters. Standard records return to a printable table, while wide stacked reports retain labeled content. Print-specific point sizes are distinct from the screen readability floor.
+Print retains light-paper tokens: dark ink, white paper and legible correction badges; application chrome stays hidden.
+
+## Interface copy
+
+Static page, navigation, card, modal, tab and action captions use Title Case with lowercase minor words (and, to, for, of, the). Form/table labels, placeholders, helper text, tooltips, prompts, empty states and status badges use sentence case. Empty-state fragments omit periods; complete helper/alert sentences are punctuated. Busy labels describe activity in sentence case. Acronyms such as ID, PDF, CSV, API and RDU keep their spelling.
+
+Use project for a research record, account for access/approval settings, message for an in-app notification, review for document decisions and stage for workflow navigation. Official research types and checklist item/group wording are preserved; phase headings receive explicit display-only case aliases. No automatic capitalization of record content, names, emails, filenames, announcement/notification content or feedback. Report aliases belong only to typed status/stage cells. See `docs/UI-COPY.md` for the file manifest and examples.
+
+## Motion
+
+Use shared tokens from `src/theme.css` and utilities from `src/motion.css`, not local timing constants: 150ms feedback, 200ms standard reveals, 220ms view changes, 250ms dialog/scrim entrances; ease-out for arrivals/hover and ease-in-out for views. Transition only background-color, color, border-color, opacity and transform. `.motion-feedback` opts a surface into feedback; `.motion-micro` adds an optional 1px hover lift on fine pointers; `.motion-fade` provides the standard shallow opacity reveal. Static cards do not lift.
+
+`ViewMotion` provides page/project/tab/phase continuity without remounting form content. Reveals begin at 0.96 opacity, keeping text readable and avoiding blank white flashes. Dialog content, inline reviews, replies and toasts use the same gentle reveal; dark scrims ease from 65% to 82% midnight. Native selects keep platform popup behavior. Mobile navigation fades in place, never sweeps across the screen. Closing remains immediate so focus/inertness and input semantics do not wait on animation.
+
+The loading/error surface uses midnight with legible inverse text and a static gold marker, not a spinner. Keep the established white-dominant working surfaces. No animated dimensions, layout shifts, zoom, bounce, flashing, perpetual loops, staged lists, scroll choreography or permanent will-change. Reduced-motion disables CSS motion and scrolling effects and skips/cancels view animations, including live preference changes; print is motion-free.
+
+See `docs/MOTION.md` for the complete changed-file manifest and checks.
 
 ## Elevation & Depth
 
-Routine cards, tables and filters are flat: a white surface and fine rules provide separation. Shadows are reserved for dialogs and temporary feedback. Dialogs use a dark translucent navy scrim and (`0 18px 70px #0a1b3055`) shadow; toast feedback uses a smaller offset shadow. No decorative gradients, blur, bevels or raster illustrations are introduced.
+Routine panels remain flat, separated by surface tone, restrained indigo rules and spacing. Dialogs/toasts retain their existing offset shadow geometry using the midnight shadow token. No new blur, glass, decorative bevel or generated imagery is introduced.
 
-**The Flat Workspace Rule.** Use tone, spacing and hierarchy for normal records; reserve elevation for temporary surfaces.
+**The Flat Workspace Rule.** Reserve elevation for temporary surfaces, not ordinary research records.
 
 ## Shapes
 
-Controls use modest rounded rectangles, panels slightly broader corners, and dialogs the broadest corners. Badges are small rectangular status labels, never a substitute for a clear action. Phase markers and avatars are circular. Fine separators structure evidence; selection is conveyed through text, outline/underline and fill rather than decorative stripes.
+The established control, field, panel, review and dialog radii remain unchanged. Phase markers and avatars remain circular. Status badges are rectangular written labels. The selected-tab underline remains a functional state marker rather than decorative framing.
 
 ## Components
 
 ### Buttons
 
-Named, comfortable and predictable. Primary and secondary buttons use body-scale text and standard (48px) targets; interactive controls never intentionally fall below (44px) in either dimension. Labels wrap rather than disappear. Secondary buttons are white with a visible border; teal text actions retain generous targets. Hover and disabled states remain legible. Focus uses a (3px) outline with offset, with a pale focus color on dark surfaces.
+Primary actions have gold fill and midnight text; hover uses cream gold. Secondary and caution actions use white fill, dark text and a visible indigo border. Focus is indigo on light surfaces and cream gold in dark brand regions. Disabled controls retain readable muted text without pretending to be active. The existing (48px) standard target and (44px) minimum remain.
 
 ### Inputs / Fields
 
-Top-aligned associated labels display Required/Optional. Hints explain the expected input in everyday language. Native PDF/file/date/select controls remain familiar and body-sized. Project forms group name, category/department and study description into fieldsets. Native required/type validation is supplemented with readable alerts; review feedback becomes required when asking for changes or rejecting a document.
+Native fields, file selectors, dropdowns and textareas use white surfaces, dark values, dark muted placeholders and visible indigo field borders. Native color scheme is light; focus and caret are indigo. Required/optional indicators, helper instructions and all validation/review behavior are unchanged.
 
 ### Status badges
 
-Written display labels explain stored statuses without changing their API values. Examples include In progress, Waiting for review, Changes needed, Not submitted and Not needed. Counter badges retain normal numeric/text children rather than converting them to comma-separated strings.
+Pending/ongoing/approved states use indigo wording on soft white-violet; neutral history states use dark muted ink. Needs Revision, Rejected and Suspended use white on crimson. Written labels remain the distinguishing semantic cue; changing the display palette never changes an API enum or review decision.
 
-### Cards / Containers and responsive records
+### Cards / Tables / Reports
 
-Panels provide consistent hierarchy and spacing, not nested decorative cards. Desktop tables have semantic column headings and wrapping values. Mobile records show every original cell with its heading above the value and a clearly labeled action. Long titles, filenames, department names and feedback are not truncated.
+Primary containers are white, with soft white-violet secondary sections. Table headings and section headings use indigo; record values use midnight ink and secondary detail dark muted violet. Labeled mobile records and all report columns remain available. Print has explicit light-paper tokens.
 
 ### Navigation and tabs
 
-The single menu groups related destinations under Research, Reports and updates, and Administration. The active destination has a lighter navy background and `aria-current`. Home, Things to do and Messages use plain language. Tabs are wrapping buttons with pressed-state semantics, a selected fill and functional underline; they do not require sideways navigation.
+The shell is midnight indigo; selected destinations are slate violet with gold text/icons. Other navigation items use white/lavender, preserving the plain-language labels and existing role filtering. Selected tabs use indigo foreground, gold underline and soft white-violet fill. Menu focus, Escape behavior and background inertness remain unchanged.
 
-The closed mobile drawer is inert and hidden. Opening moves focus inside; Tab stays within it; Escape closes it and restores the menu trigger after the main area is no longer inert. Page navigation focuses the new heading instead of leaving focus on an offscreen menu item.
+### Lifecycle and evidence
 
-### Lifecycle and documentary checklist
+Phase controls and progress retain gold highlights; document rows and numerical statistics use readable indigo on white while preserving official terminology, metadata and status text. The prior/current/upcoming/completed behavior and server-controlled advancement remain untouched.
 
-The exact source checklist remains the authority. Each stage pairs its official name with a short explanation. Evidence rows keep requirement wording, feedback, file/version metadata, status and permission-dependent actions. Locked readiness guidance explains what must happen next. Completed research is described as complete rather than ready to advance again.
+### Researcher profiles
 
-### Review-before-save and dialogs
+Keep the searchable faculty directory table, but make View profile a full page inside the workspace. The approved profile composition has a solid royal-indigo cover, initials avatar overlapping its lower edge, identity/email action and inline research totals. A soft-white-violet About panel sits beside a list of white research cards on wide screens; they stack on smaller screens. Do not reuse a popup or table for the individual profile.
 
-Sensitive forms follow Enter details → Check before saving → Confirm. The first step validates and summarizes without sending a mutation. The summary uses human-readable option labels and filename/size; editing preserves values and selected files. Final confirmation invokes the existing command with unchanged backend values. Failure keeps the same upload attempt key.
+Only current authorized records appear: department/email/role/status plus project title/type/year/program/abstract/stage/status. Research cards open the existing project view and allow return to the profile; Back to faculty retains directory search. Show empty/missing states honestly, include authorized archived work, and label totals as visible to the account. No invented portrait, biography, phone, publications, citations or social metrics. Profile identity participates in the shared calm view reveal without remounting content.
 
-Closing a changed form requires a keep-editing/leave-without-saving decision. Busy saves cannot be dismissed. Dialogs make background controls inert, trap focus, support Escape appropriately and restore focus on exit. The modal header is not sticky; the complete dialog scrolls internally. Errors use an alert, success uses a status notice, and a failed refresh after successful saving has its own recovery action.
+### Confirmation and feedback
 
-Motion is restrained: toast entry and bounded control/chart feedback support orientation, never hide content. Reduced-motion disables transitions/animation. Forced-colors support retains selection and focus affordances.
+Review summaries and dialogs use white surfaces; the final confirmation is a gold action, and editing remains a clearly labeled secondary action. Alerts use legible dark text with a restrained crimson status boundary. Success feedback uses indigo/white with gold emphasis. No new mutation, retry or dismissal behavior is introduced.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** retain the navy/teal identity while prioritizing readability over compact density.
-- **Do** use body-scale text for working information and at least the supporting scale for secondary details.
-- **Do** reflow every data field into labeled mobile records rather than hiding or truncating it.
-- **Do** keep exact research categories/checklist wording and supplement them with short explanations.
-- **Do** show an editable review summary before sensitive saving, with no early mutation.
-- **Do** preserve visible keyboard focus, inert background behavior and explicit text labels.
+- **Do** use the exact requested palette through centralized theme properties.
+- **Do** pair gold controls with midnight text and crimson badges with white text.
+- **Do** keep the existing readable sizing, generous targets and responsive record layout.
+- **Do** load the bundled Montserrat and Plus Jakarta Sans faces rather than depending on external font requests.
+- **Do** retain the supplied sign-in photo under the royal-indigo overlay.
+- **Do** keep white dominant and preserve light-paper print contrast.
 
 ### Don't:
 
-- **Don't** imply that provisional styling is official university branding or demo signatures are certified signatures.
-- **Don't** shrink fields, filenames, feedback or status text to fit narrower screens.
-- **Don't** replace saved/API status values or role rules just to simplify their display labels.
-- **Don't** equate document upload with approval or monitoring with review authority.
-- **Don't** present a failed refresh as an unsaved action after the command already succeeded.
-- **Don't** add decorative shadows or imagery to ordinary working records.
+- **Don't** introduce new backend, route, permission or form behavior as part of a visual theme change.
+- **Don't** use crimson as a general surface or lavender text on a crimson badge.
+- **Don't** shrink filenames, feedback, table values or controls to fit new font metrics.
+- **Don't** replace official checklist/type wording or saved state values.
+- **Don't** claim user-specified colors or supplied imagery are officially approved institutional brand assets.
+- **Don't** reintroduce the removed sign-in stage strip or earlier promotional headline.

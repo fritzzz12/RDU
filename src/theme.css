@@ -1,0 +1,58 @@
+/* White-dominant workspace with indigo/gold brand accents. */
+@import "./fonts.css";
+
+:root {
+  --color-primary-dark: #100b38;
+  --color-brand-royal: #1c1554;
+  --color-brand-violet: #2c2666;
+  --color-primary-surface: #ffffff;
+  --color-secondary-surface: #f5f4fa;
+  --color-accent-gold: #f5ce56;
+  --color-accent-highlight: #fce38a;
+  --color-text-primary: #100b38;
+  --color-text-muted: #514b70;
+  --color-text-inverse: #ffffff;
+  --color-text-inverse-muted: #c8c4e0;
+  --color-accent-text: var(--color-brand-royal);
+  --color-accent-text-hover: var(--color-primary-dark);
+  --color-status-crimson: #c5192d;
+
+  --color-border: rgb(28 21 84 / 20%);
+  --color-divider: rgb(28 21 84 / 14%);
+  --color-field-border: rgb(28 21 84 / 60%);
+  --color-overlay: rgb(28 21 84 / 88%);
+  --color-scrim: rgb(16 11 56 / 82%);
+  --color-shadow: rgb(16 11 56 / 14%);
+  --color-focus: var(--color-brand-royal);
+  --color-selection: var(--color-accent-gold);
+  --color-on-accent: var(--color-primary-dark);
+
+  --font-display: "Montserrat", "Poppins", sans-serif;
+  --font-body: "Plus Jakarta Sans", "DM Sans", sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-heading: 800;
+  --font-weight-display: 900;
+  --letter-spacing-display: 0.03em;
+
+  --motion-fast: 150ms;
+  --motion-standard: 200ms;
+  --motion-view: 220ms;
+  --motion-overlay: 250ms;
+  --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-in-out: ease-in-out;
+  --motion-lift: -1px;
+  --motion-reveal-opacity: 0.96;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-standard: 0ms;
+    --motion-view: 0ms;
+    --motion-overlay: 0ms;
+    --motion-lift: 0px;
+    --motion-reveal-opacity: 1;
+  }
+}

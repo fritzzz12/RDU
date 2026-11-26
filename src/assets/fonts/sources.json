@@ -1,0 +1,114 @@
+{
+  "provider": "Google Fonts",
+  "license": "SIL Open Font License 1.1; individual license files included",
+  "fonts": [
+    {
+      "file": "dm-sans-italic-latin-ext.woff2",
+      "family": "DM Sans",
+      "style": "italic",
+      "weight": "400",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/dmsans/v17/rP2rp2ywxg089UriCZaSExd86J3t9jz86Mvy4qCRAL19DksVat-JDV36TGc5pg.woff2",
+      "bytes": 8128
+    },
+    {
+      "file": "dm-sans-italic-latin.woff2",
+      "family": "DM Sans",
+      "style": "italic",
+      "weight": "400",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/dmsans/v17/rP2rp2ywxg089UriCZaSExd86J3t9jz86Mvy4qCRAL19DksVat-JDV30TGc.woff2",
+      "bytes": 15140
+    },
+    {
+      "file": "dm-sans-normal-latin-ext.woff2",
+      "family": "DM Sans",
+      "style": "normal",
+      "weight": "400 700",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2",
+      "bytes": 18228
+    },
+    {
+      "file": "dm-sans-normal-latin.woff2",
+      "family": "DM Sans",
+      "style": "normal",
+      "weight": "400 700",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2",
+      "bytes": 36932
+    },
+    {
+      "file": "montserrat-normal-latin-ext.woff2",
+      "family": "Montserrat",
+      "style": "normal",
+      "weight": "700 900",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459Wdhyzbi.woff2",
+      "bytes": 70688
+    },
+    {
+      "file": "montserrat-normal-latin.woff2",
+      "family": "Montserrat",
+      "style": "normal",
+      "weight": "700 900",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2",
+      "bytes": 37956
+    },
+    {
+      "file": "plus-jakarta-sans-italic-latin-ext.woff2",
+      "family": "Plus Jakarta Sans",
+      "style": "italic",
+      "weight": "400",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIZaomQNQcsA88c7O9yZ4KMCoOg4KozySKCdSNG9OcqYQ0lCS_ZOKyYRw.woff2",
+      "bytes": 11140
+    },
+    {
+      "file": "plus-jakarta-sans-italic-latin.woff2",
+      "family": "Plus Jakarta Sans",
+      "style": "italic",
+      "weight": "400",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIZaomQNQcsA88c7O9yZ4KMCoOg4KozySKCdSNG9OcqYQ0lCS_XOKw.woff2",
+      "bytes": 12592
+    },
+    {
+      "file": "plus-jakarta-sans-normal-latin-ext.woff2",
+      "family": "Plus Jakarta Sans",
+      "style": "normal",
+      "weight": "400 700",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2",
+      "bytes": 21728
+    },
+    {
+      "file": "plus-jakarta-sans-normal-latin.woff2",
+      "family": "Plus Jakarta Sans",
+      "style": "normal",
+      "weight": "400 700",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2",
+      "bytes": 27348
+    },
+    {
+      "file": "poppins-normal-latin-ext.woff2",
+      "family": "Poppins",
+      "style": "normal",
+      "weight": "800",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z1JlFc-K.woff2",
+      "bytes": 5492
+    },
+    {
+      "file": "poppins-normal-latin.woff2",
+      "family": "Poppins",
+      "style": "normal",
+      "weight": "800",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLDD4Z1xlFQ.woff2",
+      "bytes": 7824
+    }
+  ]
+}

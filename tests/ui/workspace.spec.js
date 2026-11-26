@@ -6,6 +6,11 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { types, checklist } from "../../shared/catalog.js";
+const phaseHeadings = [
+  "I. Conceptualization Phase",
+  "II. Development Phase",
+  "III. Implementation Phase",
+];
 let app, server, url, dir;
 test.beforeEach(async () => {
   dir = mkdtempSync(join(tmpdir(), "rdms-ui-"));
@@ -23,7 +28,7 @@ test.afterEach(async () => {
 async function login(page, id) {
   await page.goto(url);
   await page.locator("#demo-user").selectOption(id);
-  await page.getByRole("button", { name: "Open practice workspace" }).click();
+  await page.getByRole("button", { name: "Open Practice Workspace" }).click();
   await expect(
     page.getByRole("heading", {
       name: "Home",
@@ -43,10 +48,10 @@ async function reviewAndConfirm(page, label) {
   page.on("request", record);
   try {
     await page
-      .getByRole("button", { name: "Review before saving", exact: true })
+      .getByRole("button", { name: "Review Before Saving", exact: true })
       .click();
     await expect(
-      page.getByRole("heading", { name: "Check before saving", exact: true }),
+      page.getByRole("heading", { name: "Check Before Saving", exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: label, exact: true }),
@@ -74,19 +79,19 @@ test("director can navigate all authorized modules and sees no admin controls", 
     fullPage: true,
   });
   await expect(
-    page.getByRole("button", { name: "Manage accounts", exact: true }),
+    page.getByRole("button", { name: "Manage Accounts", exact: true }),
   ).toHaveCount(0);
   for (const title of [
-    "Things to do",
+    "Things to Do",
     "Messages",
-    "Research projects",
-    "Submitted documents",
-    "Review documents",
-    "Completed research",
-    "Faculty members",
+    "Research Projects",
+    "Submitted Documents",
+    "Review Documents",
+    "Completed Research",
+    "Faculty Members",
     "Reports",
-    "News and opportunities",
-    "Research help",
+    "News and Opportunities",
+    "Research Help",
   ]) {
     await page
       .getByRole("navigation")
@@ -114,7 +119,7 @@ test("researcher submits corrected PDF, head reviews signed new version", async 
   await login(page, "researcher-1");
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Research projects", exact: true })
+    .getByRole("button", { name: "Research Projects", exact: true })
     .click();
   await page.locator(".project-link").first().click();
   await expect(page.locator(".lifecycle")).toBeVisible();
@@ -127,7 +132,7 @@ test("researcher submits corrected PDF, head reviews signed new version", async 
     .filter({ hasText: "Capsule Proposal of Faculty/Researcher" });
   await expect(row.getByText("Changes needed", { exact: true })).toBeVisible();
   await row
-    .getByRole("button", { name: "Upload a new version", exact: true })
+    .getByRole("button", { name: "Upload New Version", exact: true })
     .click();
   await page.getByLabel("PDF document", { exact: false }).setInputFiles({
     name: "corrected-capsule.pdf",
@@ -135,19 +140,19 @@ test("researcher submits corrected PDF, head reviews signed new version", async 
     buffer: syntheticPdf("UI test corrected capsule"),
   });
   await page
-    .getByLabel("Version / correction note", { exact: false })
+    .getByLabel("Version or correction note", { exact: false })
     .fill("Corrected scope and objectives.");
-  await reviewAndConfirm(page, "Confirm and submit document");
+  await reviewAndConfirm(page, "Confirm and Submit Document");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(
     row.getByText("Waiting for review", { exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Switch account" }).click();
+  await page.getByRole("button", { name: "Switch Account" }).click();
   await page.locator("#demo-user").selectOption("head-1");
-  await page.getByRole("button", { name: "Open practice workspace" }).click();
+  await page.getByRole("button", { name: "Open Practice Workspace" }).click();
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Review documents", exact: true })
+    .getByRole("button", { name: "Review Documents", exact: true })
     .click();
   const pending = page
     .locator("tr")
@@ -155,7 +160,7 @@ test("researcher submits corrected PDF, head reviews signed new version", async 
   await pending.getByRole("button", { name: "Review PDF" }).click();
   await expect(page.locator("iframe")).toBeVisible();
   await page.getByLabel(/^Decision /).selectOption("Approved");
-  await reviewAndConfirm(page, "Confirm and save decision");
+  await reviewAndConfirm(page, "Confirm and Save Decision");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page
     .locator(".tabs")
@@ -171,7 +176,7 @@ test("admin approves pending account and creates safe announcement", async ({
   await login(page, "admin");
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Manage accounts", exact: true })
+    .getByRole("button", { name: "Manage Accounts", exact: true })
     .click();
   const row = page
     .locator("tr")
@@ -181,13 +186,13 @@ test("admin approves pending account and creates safe announcement", async ({
   await page
     .getByLabel("Account status", { exact: false })
     .selectOption("Active");
-  await reviewAndConfirm(page, "Confirm account changes");
+  await reviewAndConfirm(page, "Confirm Account Changes");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "News and opportunities", exact: true })
+    .getByRole("button", { name: "News and Opportunities", exact: true })
     .click();
-  await page.getByRole("button", { name: "Create announcement" }).click();
+  await page.getByRole("button", { name: "Create Announcement" }).click();
   await page
     .getByLabel("Title", { exact: false })
     .fill("Prototype research forum");
@@ -197,7 +202,7 @@ test("admin approves pending account and creates safe announcement", async ({
   await page
     .getByLabel("Publication status", { exact: false })
     .selectOption("Published");
-  await reviewAndConfirm(page, "Confirm and save announcement");
+  await reviewAndConfirm(page, "Confirm and Save Announcement");
   await expect(
     page.getByRole("heading", { name: "Prototype research forum" }),
   ).toBeVisible();
@@ -208,17 +213,22 @@ test("new project form uses department-specific programs and persists submission
   await login(page, "admin");
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Research projects", exact: true })
+    .getByRole("button", { name: "Research Projects", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Add a research project", exact: true })
+    .getByRole("button", { name: "Add Research Project", exact: true })
     .click();
   await expect(
-    page.getByLabel("Research project type").locator("option"),
+    page.getByRole("dialog").getByLabel("Research type").locator("option"),
   ).toHaveText(types);
   for (const type of types) {
-    await page.getByLabel("Research project type").selectOption(type);
-    await expect(page.getByLabel("Research project type")).toHaveValue(type);
+    await page
+      .getByRole("dialog")
+      .getByLabel("Research type")
+      .selectOption(type);
+    await expect(
+      page.getByRole("dialog").getByLabel("Research type"),
+    ).toHaveValue(type);
   }
   await page
     .getByLabel("Research title", { exact: false })
@@ -234,7 +244,8 @@ test("new project form uses department-specific programs and persists submission
   });
   expect(owners.length).toBeGreaterThan(0);
   await page
-    .getByLabel("College department", { exact: false })
+    .getByRole("dialog")
+    .getByLabel("Department", { exact: false })
     .selectOption(owners[0].department);
   const bootstrap = await (
     await page.request.get(url + "/api/bootstrap")
@@ -250,14 +261,15 @@ test("new project form uses department-specific programs and persists submission
     .getByLabel("Research owner", { exact: false })
     .selectOption(owners[0].id);
   await page
-    .getByLabel("Research project type", { exact: false })
+    .getByRole("dialog")
+    .getByLabel("Research type", { exact: false })
     .selectOption("Equivalent Teaching Research Project (ETL)");
   await page
     .getByLabel("Research abstract", { exact: false })
     .fill(
       "A synthetic study to validate the end-to-end research project submission workflow.",
     );
-  await reviewAndConfirm(page, "Confirm and create project");
+  await reviewAndConfirm(page, "Confirm and Create Project");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(
     page.getByRole("button", {
@@ -272,7 +284,7 @@ test("rejected evidence remains actionable and can be resubmitted", async ({
   await login(page, "head-1");
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Review documents", exact: true })
+    .getByRole("button", { name: "Review Documents", exact: true })
     .click();
   const row = page
     .locator("tr")
@@ -283,14 +295,14 @@ test("rejected evidence remains actionable and can be resubmitted", async ({
   await page
     .getByLabel("Review feedback", { exact: false })
     .fill("Wrong attachment; submit the matching documentary evidence.");
-  await reviewAndConfirm(page, "Confirm and save decision");
+  await reviewAndConfirm(page, "Confirm and Save Decision");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await page.getByRole("button", { name: "Switch account" }).click();
+  await page.getByRole("button", { name: "Switch Account" }).click();
   await page.locator("#demo-user").selectOption("researcher-1");
-  await page.getByRole("button", { name: "Open practice workspace" }).click();
+  await page.getByRole("button", { name: "Open Practice Workspace" }).click();
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Things to do", exact: true })
+    .getByRole("button", { name: "Things to Do", exact: true })
     .click();
   await expect(
     page.getByText(
@@ -298,19 +310,19 @@ test("rejected evidence remains actionable and can be resubmitted", async ({
     ),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Open project", exact: true })
+    .getByRole("button", { name: "Open Project", exact: true })
     .first()
     .click();
   const rejected = page
     .locator(".requirement")
     .filter({ has: page.getByText("Not accepted", { exact: true }) });
-  await rejected.getByRole("button", { name: "Upload a new version" }).click();
+  await rejected.getByRole("button", { name: "Upload New Version" }).click();
   await page.getByLabel("PDF document", { exact: false }).setInputFiles({
     name: "matching-evidence.pdf",
     mimeType: "application/pdf",
     buffer: syntheticPdf("Replacement evidence"),
   });
-  await reviewAndConfirm(page, "Confirm and submit document");
+  await reviewAndConfirm(page, "Confirm and Submit Document");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(
     page.getByText("matching-evidence.pdf", { exact: false }),
@@ -325,9 +337,9 @@ test("mobile navigation, checklist and dialog fit a 390px viewport", async ({
     path: ".thinkrail/context/screenshots/accessible-mobile.png",
     fullPage: true,
   });
-  await expect(page.getByRole("button", { name: "Open menu" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open Menu" })).toBeVisible();
   await expect(page.locator(".sidebar")).toHaveAttribute("inert", "");
-  await page.getByRole("button", { name: "Open menu" }).focus();
+  await page.getByRole("button", { name: "Open Menu" }).focus();
   for (let i = 0; i < 6; i++) {
     await page.keyboard.press("Tab");
     expect(
@@ -337,15 +349,15 @@ test("mobile navigation, checklist and dialog fit a 390px viewport", async ({
       }),
     ).toBeTruthy();
   }
-  await page.getByRole("button", { name: "Open menu" }).click();
+  await page.getByRole("button", { name: "Open Menu" }).click();
   await expectFocusContained(page, page.locator(".sidebar"));
   await expect(page.locator("main").locator("..")).toHaveAttribute("inert", "");
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: "Open menu" })).toBeFocused();
-  await page.getByRole("button", { name: "Open menu" }).click();
+  await expect(page.getByRole("button", { name: "Open Menu" })).toBeFocused();
+  await page.getByRole("button", { name: "Open Menu" }).click();
   await page
     .getByRole("navigation")
-    .getByRole("button", { name: "Research projects", exact: true })
+    .getByRole("button", { name: "Research Projects", exact: true })
     .click();
   await page.locator(".project-link").first().click();
   await expect(page.locator(".lifecycle")).toBeVisible();
@@ -358,7 +370,7 @@ test("mobile navigation, checklist and dialog fit a 390px viewport", async ({
 });
 
 async function navigate(page, title) {
-  const menu = page.getByRole("button", { name: "Open menu", exact: true });
+  const menu = page.getByRole("button", { name: "Open Menu", exact: true });
   if (await menu.isVisible()) await menu.click();
   await page
     .getByRole("navigation")
@@ -435,21 +447,21 @@ async function assertReadableReflow(page) {
 
 const sharedModules = [
   "Home",
-  "Things to do",
+  "Things to Do",
   "Messages",
-  "Research projects",
-  "Submitted documents",
-  "Review documents",
-  "Completed research",
-  "Faculty members",
+  "Research Projects",
+  "Submitted Documents",
+  "Review Documents",
+  "Completed Research",
+  "Faculty Members",
   "Reports",
-  "News and opportunities",
-  "Research help",
+  "News and Opportunities",
+  "Research Help",
 ];
 const adminModules = [
-  "Manage accounts",
-  "Access and permissions",
-  "Activity history",
+  "Manage Accounts",
+  "Access and Permissions",
+  "Activity History",
   "Settings",
 ];
 for (const identity of ["admin", "director", "head-1", "researcher-1"]) {
@@ -464,18 +476,18 @@ for (const identity of ["admin", "director", "head-1", "researcher-1"]) {
     ]) {
       await navigate(page, title);
       await assertReadableReflow(page);
-      if (identity === "admin" && title === "Manage accounts")
+      if (identity === "admin" && title === "Manage Accounts")
         await page.screenshot({
           path: ".thinkrail/context/screenshots/accessible-admin-mobile.png",
           fullPage: true,
         });
     }
-    await navigate(page, "Research projects");
+    await navigate(page, "Research Projects");
     await page.locator(".project-link").first().click();
     await assertProjectReflow(page);
     if (identity !== "admin") {
       await page
-        .getByRole("button", { name: "Open menu", exact: true })
+        .getByRole("button", { name: "Open Menu", exact: true })
         .click();
       for (const title of adminModules)
         await expect(
@@ -498,7 +510,7 @@ for (const width of [1440, 1024, 320, 720]) {
       await navigate(page, title);
       await assertReadableReflow(page);
     }
-    await navigate(page, "Research projects");
+    await navigate(page, "Research Projects");
     await page.locator(".project-link").first().click();
     await expect(page.locator(".lifecycle")).toBeVisible();
     await assertProjectReflow(page);
@@ -509,11 +521,11 @@ async function assertProjectReflow(page) {
   for (let phase = 0; phase < checklist.length; phase++) {
     await page.locator(".lifecycle button").nth(phase).click();
     await expect(
-      page.getByRole("heading", { name: checklist[phase].name, exact: true }),
+      page.getByRole("heading", { name: phaseHeadings[phase], exact: true }),
     ).toBeVisible();
     await assertReadableReflow(page);
   }
-  for (const title of ["Documents", "Project history", "Project details"]) {
+  for (const title of ["Documents", "Project History", "Project Details"]) {
     await page
       .locator(".tabs")
       .getByRole("button", {
@@ -526,13 +538,13 @@ async function assertProjectReflow(page) {
 }
 
 async function openCorrection(page) {
-  await navigate(page, "Research projects");
+  await navigate(page, "Research Projects");
   await page.locator(".project-link").first().click();
   const row = page
     .locator(".requirement")
     .filter({ hasText: "Capsule Proposal of Faculty/Researcher" });
   await row
-    .getByRole("button", { name: "Upload a new version", exact: true })
+    .getByRole("button", { name: "Upload New Version", exact: true })
     .click();
 }
 
@@ -559,7 +571,7 @@ test("upload review is inline, preserves text/file on edit, and protects dirty c
   await expect(page.locator("main").locator("..")).toHaveAttribute("inert", "");
   await expectFocusContained(page, dialog);
   const file = page.getByLabel("PDF document");
-  const note = page.getByLabel("Version / correction note");
+  const note = page.getByLabel("Version or correction note");
   const signature = page.getByLabel("Your full name for this submission");
   await file.setInputFiles({
     name: "kept-evidence.pdf",
@@ -573,16 +585,16 @@ test("upload review is inline, preserves text/file on edit, and protects dirty c
     if (isMutation(request)) mutations.push(request.url());
   });
   await page
-    .getByRole("button", { name: "Review before saving", exact: true })
+    .getByRole("button", { name: "Review Before Saving", exact: true })
     .click();
-  const review = page.getByRole("region", { name: "Check before saving" });
+  const review = page.getByRole("region", { name: "Check Before Saving" });
   await expect(review).toContainText("kept-evidence.pdf");
   await expect(review).toContainText(
     "Keep this correction and the selected PDF while editing.",
   );
   await expect(review).toContainText("Dr Sample Researcher");
   await expect(
-    page.getByRole("heading", { name: "Check before saving", exact: true }),
+    page.getByRole("heading", { name: "Check Before Saving", exact: true }),
   ).toBeFocused();
   await expect(dialog).toHaveCount(1);
   await page.screenshot({
@@ -590,7 +602,7 @@ test("upload review is inline, preserves text/file on edit, and protects dirty c
     fullPage: true,
   });
   await page
-    .getByRole("button", { name: "Go back and edit", exact: true })
+    .getByRole("button", { name: "Back to Editing", exact: true })
     .click();
   await expect(note).toHaveValue(
     "Keep this correction and the selected PDF while editing.",
@@ -604,20 +616,20 @@ test("upload review is inline, preserves text/file on edit, and protects dirty c
     page.getByRole("heading", { name: "Leave without saving?", exact: true }),
   ).toBeVisible();
   await expect(dialog).toHaveCount(1);
-  await page.getByRole("button", { name: "Keep editing", exact: true }).click();
+  await page.getByRole("button", { name: "Keep Editing", exact: true }).click();
   await expect(note).toHaveValue(
     "Keep this correction and the selected PDF while editing.",
   );
   await dialog.getByRole("button", { name: "Close", exact: true }).click();
   await page
-    .getByRole("button", { name: "Leave without saving", exact: true })
+    .getByRole("button", { name: "Leave Without Saving", exact: true })
     .click();
   await expect(dialog).toHaveCount(0);
   await expect(
     page
       .locator(".requirement")
       .filter({ hasText: "Capsule Proposal of Faculty/Researcher" })
-      .getByRole("button", { name: "Upload a new version", exact: true }),
+      .getByRole("button", { name: "Upload New Version", exact: true }),
   ).toBeFocused();
   expect(
     mutations,
@@ -629,7 +641,7 @@ test("required fields and feedback block review before any mutation", async ({
   page,
 }) => {
   await login(page, "head-1");
-  await navigate(page, "Review documents");
+  await navigate(page, "Review Documents");
   await page
     .getByRole("button", { name: "Review PDF", exact: true })
     .first()
@@ -641,13 +653,13 @@ test("required fields and feedback block review before any mutation", async ({
     if (isMutation(request)) mutations.push(request.url());
   });
   await page
-    .getByRole("button", { name: "Review before saving", exact: true })
+    .getByRole("button", { name: "Review Before Saving", exact: true })
     .click();
   expect(await signature.evaluate((el) => el.validity.valueMissing)).toBe(true);
   await expect(signature).toBeFocused();
   await expect(
     page.getByRole("button", {
-      name: "Confirm and save decision",
+      name: "Confirm and Save Decision",
       exact: true,
     }),
   ).toBeHidden();
@@ -656,14 +668,14 @@ test("required fields and feedback block review before any mutation", async ({
     await page.getByLabel(/^Decision \(Required\)$/).selectOption(decision);
     await page.getByLabel("Review feedback").fill("   ");
     await page
-      .getByRole("button", { name: "Review before saving", exact: true })
+      .getByRole("button", { name: "Review Before Saving", exact: true })
       .click();
     await expect(page.getByRole("alert")).toContainText(
-      "Explain the changes needed in Review feedback before continuing.",
+      "Enter the required corrections in the review feedback field before continuing.",
     );
     await expect(
       page.getByRole("button", {
-        name: "Confirm and save decision",
+        name: "Confirm and Save Decision",
         exact: true,
       }),
     ).toBeHidden();
@@ -672,7 +684,7 @@ test("required fields and feedback block review before any mutation", async ({
   await page
     .getByLabel("Review feedback")
     .fill("Please correct the evidence and upload a matching document.");
-  await reviewAndConfirm(page, "Confirm and save decision");
+  await reviewAndConfirm(page, "Confirm and Save Decision");
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
@@ -680,7 +692,7 @@ test("official checklist wording is retained in every research phase", async ({
   page,
 }) => {
   await login(page, "researcher-1");
-  await navigate(page, "Research projects");
+  await navigate(page, "Research Projects");
   await page.locator(".project-link").first().click();
   const phaseButtons = page.locator(".lifecycle button");
   await expect(phaseButtons).toHaveCount(3);
@@ -690,7 +702,7 @@ test("official checklist wording is retained in every research phase", async ({
       /^\d+\s*\/\s*\d+\s+complete$/,
     );
     await expect(
-      page.getByRole("heading", { name: checklist[phase].name, exact: true }),
+      page.getByRole("heading", { name: phaseHeadings[phase], exact: true }),
     ).toBeVisible();
     for (const group of checklist[phase].groups) {
       await expect(
@@ -716,10 +728,10 @@ test("head cannot advance until authoritative server requirements are ready; app
     (p) => p.status === "Ongoing" && p.phase === 0,
   );
   expect(project).toBeTruthy();
-  await navigate(page, "Research projects");
+  await navigate(page, "Research Projects");
   await page.getByRole("button", { name: project.title, exact: true }).click();
   const advance = page.getByRole("button", {
-    name: "Approve the next stage",
+    name: "Approve Next Stage",
     exact: true,
   });
   await expect(advance).toBeDisabled();
@@ -769,14 +781,14 @@ test("head cannot advance until authoritative server requirements are ready; app
   }
   await page.reload();
   await expect(page.locator("main h1.page-title-focus")).toHaveText("Home");
-  await navigate(page, "Research projects");
+  await navigate(page, "Research Projects");
   await page.getByRole("button", { name: project.title, exact: true }).click();
   await expect(advance).toBeEnabled();
   await advance.click();
   await expect(page.getByLabel("Your full name for this approval")).toHaveValue(
     data.user.name,
   );
-  await reviewAndConfirm(page, "Confirm the next stage");
+  await reviewAndConfirm(page, "Confirm Next Stage");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   response = await page.request.get(url + "/api/bootstrap");
   expect(
@@ -798,20 +810,20 @@ for (const width of [390, 320, 720]) {
       buffer: syntheticPdf("Mobile evidence for review"),
     });
     await page
-      .getByLabel("Version / correction note")
+      .getByLabel("Version or correction note")
       .fill("A correction note remains readable on a narrow screen.");
     await page
-      .getByRole("button", { name: "Review before saving", exact: true })
+      .getByRole("button", { name: "Review Before Saving", exact: true })
       .click();
     await expect(
-      page.getByRole("heading", { name: "Check before saving", exact: true }),
+      page.getByRole("heading", { name: "Check Before Saving", exact: true }),
     ).toBeVisible();
     await assertReadableReflow(page);
     await expectFocusContained(page, page.getByRole("dialog"));
     await page
-      .getByRole("button", { name: "Go back and edit", exact: true })
+      .getByRole("button", { name: "Back to Editing", exact: true })
       .click();
-    await expect(page.getByLabel("Version / correction note")).toHaveValue(
+    await expect(page.getByLabel("Version or correction note")).toHaveValue(
       "A correction note remains readable on a narrow screen.",
     );
   });
@@ -829,13 +841,13 @@ test("axe WCAG AA checks on home, checklist and inline review", async ({
     expect(results.violations).toEqual([]);
   };
   await scan();
-  await navigate(page, "Research projects");
+  await navigate(page, "Research Projects");
   await page.locator(".project-link").first().click();
   await scan();
   await page
     .locator(".requirement")
     .filter({ hasText: "Capsule Proposal of Faculty/Researcher" })
-    .getByRole("button", { name: "Upload a new version", exact: true })
+    .getByRole("button", { name: "Upload New Version", exact: true })
     .click();
   await page.getByLabel("PDF document").setInputFiles({
     name: "axe-evidence.pdf",
@@ -843,10 +855,10 @@ test("axe WCAG AA checks on home, checklist and inline review", async ({
     buffer: syntheticPdf("Accessible review"),
   });
   await page
-    .getByRole("button", { name: "Review before saving", exact: true })
+    .getByRole("button", { name: "Review Before Saving", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Check before saving", exact: true }),
+    page.getByRole("heading", { name: "Check Before Saving", exact: true }),
   ).toBeVisible();
   await scan();
 });

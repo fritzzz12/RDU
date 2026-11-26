@@ -10,13 +10,13 @@ export class WorkspaceErrorBoundary extends React.Component {
     return this.state.failed ? (
       <main className="loading">
         <AlertCircle size={32} />
-        <h1>We could not display this page</h1>
+        <h1>Page Unavailable</h1>
         <p>
           Your saved research is still available. Reload the page to try again.
           Any entries you have not saved may need to be entered again.
         </p>
         <button className="button" onClick={() => window.location.reload()}>
-          Reload the page
+          Reload Page
         </button>
       </main>
     ) : (
@@ -26,19 +26,19 @@ export class WorkspaceErrorBoundary extends React.Component {
 }
 export const pageLabels = {
   Overview: "Home",
-  "Pending actions": "Things to do",
+  "Pending actions": "Things to Do",
   Notifications: "Messages",
-  "Research projects": "Research projects",
-  "Document submissions": "Submitted documents",
-  "Review & approvals": "Review documents",
-  "Research archive": "Completed research",
-  "Faculty profiles": "Faculty members",
+  "Research projects": "Research Projects",
+  "Document submissions": "Submitted Documents",
+  "Review & approvals": "Review Documents",
+  "Research archive": "Completed Research",
+  "Faculty profiles": "Faculty Members",
   "Reports & analytics": "Reports",
-  "News & announcements": "News and opportunities",
-  "Research assistant": "Research help",
-  "User management": "Manage accounts",
-  "Roles & permissions": "Access and permissions",
-  "Audit history": "Activity history",
+  "News & announcements": "News and Opportunities",
+  "Research assistant": "Research Help",
+  "User management": "Manage Accounts",
+  "Roles & permissions": "Access and Permissions",
+  "Audit history": "Activity History",
   "System settings": "Settings",
 };
 export const statusLabels = {
@@ -52,9 +52,26 @@ export const statusLabels = {
   "Not Applicable": "Not needed",
 };
 export const statusLabel = (value) => statusLabels[value] || value;
+const statusTitles = {
+  Ongoing: "In Progress",
+  "Pending Review": "Waiting for Review",
+  "Needs Revision": "Changes Needed",
+  Missing: "Not Submitted",
+  Rejected: "Not Accepted",
+  Superseded: "Earlier Version",
+  Pending: "Waiting for Approval",
+  "Not Applicable": "Not Needed",
+};
+export const statusTitle = (value) => statusTitles[value] || value;
+const phaseHeadings = {
+  "I. CONCEPTUALIZATION PHASE": "I. Conceptualization Phase",
+  "II. DEVELOPMENT PHASE": "II. Development Phase",
+  "III. IMPLEMENTATION PHASE": "III. Implementation Phase",
+};
+export const phaseHeading = (value) => phaseHeadings[value] || value;
 export const phaseDescriptions = [
   "Proposal and initial review",
-  "Prepare the study",
+  "Prepare the research",
   "Carry out and share the research",
 ];
 export const phaseLabel = (name) =>
@@ -63,9 +80,48 @@ export const phaseLabel = (name) =>
     .replace(" PHASE", "")
     .toLowerCase()
     .replace(/^./, (s) => s.toUpperCase());
+const errorCopy = {
+  "Request failed": "The request could not be completed. Try again.",
+  "Project not found.":
+    "This project is unavailable to your account. Return to Research Projects and choose an available project.",
+  "Document not found.":
+    "This document is unavailable to your account. Refresh the page and try again.",
+  "Stored PDF is unavailable.":
+    "The PDF could not be found in storage. Contact an administrator for help.",
+  "User not found.":
+    "This account is unavailable. Return to Manage Accounts and refresh the list.",
+  "Notification not found.":
+    "This message is no longer available. Refresh the message list.",
+  "Announcement not found.":
+    "This announcement is no longer available. Refresh the announcement list.",
+  "Invalid email.": "Enter a valid email address.",
+  "Email already exists.":
+    "An account already uses this email address. Enter a different institutional email address.",
+  "Deadline must be YYYY-MM-DD.":
+    "Enter a valid deadline in YYYY-MM-DD format.",
+  "Only institution and uploadLimit may be configured.":
+    "Only the institution name and upload limit can be changed here.",
+  "Applicable must be a boolean.":
+    "The requirement choice could not be saved. Reopen the form and select whether the document is required.",
+  "Retain at least one active Super Admin.":
+    "Keep at least one active Super Admin account before changing this account.",
+  "Only the assigned department head may perform this action.":
+    "Only the project's assigned department head can complete this action. Ask the assigned department head to review it.",
+  "Super Admin permission required.":
+    "This action requires a Super Admin account. Contact an account administrator if your access is incorrect.",
+  "Mandatory requirements cannot be waived.":
+    "This document is required. Only conditional requirements can be marked as not needed.",
+  "Approved requirements are immutable.":
+    "Approved requirements cannot be changed. View the project history for the saved decision.",
+  "Invalid report filters.":
+    "The report filters are invalid. Clear the filters and try again.",
+  "Only completed projects can be archived.":
+    "Only completed research can be archived. Complete the project before archiving it.",
+};
 export function friendlyError(message) {
+  if (errorCopy[message]) return errorCopy[message];
   if (/already has an ongoing project/.test(message))
-    return "This researcher already has a study in progress. Complete that study before adding another one.";
+    return "This researcher already has a project in progress. Complete it before adding another project.";
   if (/Program does not belong/.test(message))
     return "Choose an academic program that belongs to the selected department.";
   if (/valid PDF|\.pdf filename/.test(message))
@@ -73,13 +129,13 @@ export function friendlyError(message) {
   if (/exceeds.*(MB|maximum)/i.test(message))
     return "This PDF is too large. Choose a PDF smaller than the upload limit shown beside the file field.";
   if (/Feedback must/.test(message))
-    return "Explain what needs to be corrected in Review feedback before saving this decision.";
+    return "Enter the required corrections in the review feedback field before saving your decision.";
   if (/active demo session|Only active demo accounts/.test(message))
     return "You cannot use this account right now. Ask an administrator to check that it is approved and active, then sign in again.";
   if (/submission key was already used/.test(message))
-    return "This upload attempt has already been saved with different details. Close this form and choose Upload a new version to submit a different file.";
+    return 'This upload was already saved with different details. Close the form and choose "Upload New Version" to submit a different file.';
   if (/Failed to fetch|NetworkError|Load failed/.test(message))
-    return "We could not connect. Check your connection and try again. Your entries are still here.";
+    return "We could not connect. Check your connection and try again. Your entries have been kept in this form.";
   return (
     message ||
     "We could not complete this action. Please check your entries and try again."
@@ -164,7 +220,7 @@ export function SafeForm({
   onSubmit,
   context,
   busy = false,
-  confirmLabel = "Confirm and save",
+  confirmLabel = "Confirm and Save",
   note = "Check the details below. Nothing is saved until you confirm.",
   validate,
   ...props
@@ -226,8 +282,8 @@ export function SafeForm({
     >
       <p className="form-progress">
         {review
-          ? "Step 2 of 2 — Check and confirm"
-          : "Step 1 of 2 — Enter the details"}
+          ? "Step 2 of 2: Check and confirm"
+          : "Step 1 of 2: Enter details"}
       </p>
       {localError && (
         <div className="error-message" role="alert">
@@ -241,10 +297,10 @@ export function SafeForm({
       <section
         className="form-review"
         hidden={!review}
-        aria-label="Check before saving"
+        aria-label="Check Before Saving"
       >
         <h3 ref={reviewRef} tabIndex={-1}>
-          Check before saving
+          Check Before Saving
         </h3>
         {context && <p className="review-context">{context}</p>}
         <p className="review-note">{note}</p>
@@ -273,7 +329,7 @@ export function SafeForm({
             }}
           >
             <ChevronLeft size={18} />
-            Go back and edit
+            Back to Editing
           </button>
           <button
             type="button"
@@ -321,7 +377,7 @@ export function ConfirmForms({
         return React.cloneElement(
           node,
           { type: "submit" },
-          "Review before saving",
+          "Review Before Saving",
           <ArrowRight size={18} />,
         );
       return node.props.children
@@ -442,10 +498,10 @@ export function ModalFrame({
                 className="button secondary"
                 onClick={keepEditing}
               >
-                Keep editing
+                Keep Editing
               </button>
               <button type="button" className="button danger" onClick={onClose}>
-                Leave without saving
+                Leave Without Saving
               </button>
             </div>
           </div>
@@ -453,7 +509,7 @@ export function ModalFrame({
         {error && (
           <div className="error-message modal-error" role="alert">
             <AlertCircle size={20} />
-            {error}
+            {friendlyError(error)}
           </div>
         )}
         <div className="modal-body" inert={discard}>

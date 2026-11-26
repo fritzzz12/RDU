@@ -21,10 +21,10 @@ All five user-specified research categories. Real local persistence, authorized 
 Google identity and email require credentials; demo access and email outbox must be labeled, never presented as live integrations. AI is advisory and may not approve documents or phases.
 
 ## Brand Commitments
-RDMS system identity; official BukSU/RDU assets, fonts, and color values have not been supplied. Prototype styling must not be represented as official branding.
+RDMS system identity. The user's latest direction makes white the dominant working background for pages, cards, tables, forms and dialogs, with dark indigo text and muted violet supporting copy. Midnight navigation/footer regions and the sign-in photograph retain inverse white/lavender text; gold remains on primary actions and selected highlights, with limited crimson status accents. Display headings use Montserrat with Poppins fallback; body, labels and statistics use Plus Jakarta Sans with DM Sans fallback. These Google Fonts are self-hosted. The supplied BGROUND.jpg remains on the sign-in panel under an 88% royal-indigo overlay. This visual direction is user-specified and must not be represented as official institutional brand approval; the user-supplied `RDU LOGO.png` is used beside the sidebar's RDMS wordmark without a trailing period. No institutional brand approval is inferred.
 
 ## Evidence on Hand
-The three supplied source files. No existing code or production data; no official logo, personally funded checklist, Google credentials, or SMTP credentials.
+The three supplied source files, BGROUND.jpg and RDU LOGO.png. Research records are synthetic; the official personally funded checklist, Google credentials and SMTP credentials remain unavailable.
 
 ## Accessibility & Inclusion
 Beginner-friendly responsive web interface with everyday navigation/action labels, 16–18px standard working text, supporting text no smaller than 14px, generous line height, high contrast and 44–48px or larger interactive targets. Records reflow without horizontal scrolling, and all data fields remain available. Forms identify required/optional fields and sensitive submissions show an editable review summary before explicit final confirmation. Keyboard-operable dialogs/navigation protect unsaved entries and restore focus. Official checklist wording, roles, stored statuses and API contracts remain intact.

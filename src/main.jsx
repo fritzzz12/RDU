@@ -32,10 +32,14 @@ import {
   ArrowRight,
 } from "lucide-react";
 import "./styles.css";
+import rduLogo from "../RDU LOGO.png";
+import { ViewMotion } from "./motion.jsx";
 import { buildReport, reportNames } from "../shared/reporting.js";
 import {
   pageLabels,
   statusLabel,
+  statusTitle,
+  phaseHeading,
   phaseDescriptions,
   phaseLabel,
   friendlyError,
@@ -169,7 +173,7 @@ const navGroups = [
     ],
   },
   {
-    title: "Reports and updates",
+    title: "Reports and Updates",
     items: [
       ["Reports & analytics", ChartNoAxesCombined],
       ["News & announcements", Newspaper],
@@ -193,12 +197,12 @@ function ProjectFields({ data, user }) {
   return (
     <>
       <fieldset className="form-section">
-        <legend>Project category and department</legend>
+        <legend>Project Category and Department</legend>
         <p className="group-note">
-          Choose the research type, year, and academic program for this study.
+          Choose the research type, year, and academic program for this project.
         </p>
         <div className="form-grid">
-          <Field label="Research project type">
+          <Field label="Research type">
             <select name="type" required>
               {data.types.map((t) => (
                 <option key={t}>{t}</option>
@@ -215,7 +219,7 @@ function ProjectFields({ data, user }) {
               required
             />
           </Field>
-          <Field label="College department">
+          <Field label="Department">
             <select
               name="department"
               value={dept}
@@ -246,7 +250,7 @@ function ProjectFields({ data, user }) {
         {!researcher && (
           <Field
             label="Research owner"
-            hint="Choose the faculty member responsible for this study."
+            hint="Choose the faculty member responsible for this project."
           >
             <select name="ownerId" key={dept} required>
               {data.users
@@ -262,7 +266,7 @@ function ProjectFields({ data, user }) {
                     {data.projects.some(
                       (p) => p.ownerId === u.id && p.status === "Ongoing",
                     )
-                      ? " — ongoing study"
+                      ? " (project in progress)"
                       : ""}
                   </option>
                 ))}
@@ -279,6 +283,7 @@ function App() {
     [data, setData] = useState(null),
     [page, setPage] = useState("Overview"),
     [projectId, setProjectId] = useState(null),
+    [researcherId, setResearcherId] = useState(null),
     [tab, setTab] = useState("Checklist"),
     [phase, setPhase] = useState(null),
     [q, setQ] = useState(""),
@@ -354,7 +359,7 @@ function App() {
   useEffect(() => {
     if (!data || modal || mobile) return;
     document.querySelector("main h1")?.focus();
-  }, [page, projectId]);
+  }, [page, projectId, researcherId]);
   function closeNav(restoreFocus = true) {
     setMobile(false);
     if (restoreFocus)
@@ -396,6 +401,7 @@ function App() {
       await load();
       setPage("Overview");
       setProjectId(null);
+      setResearcherId(null);
       setQ("");
       setType("");
       setDepartment("");
@@ -413,6 +419,7 @@ function App() {
   function go(p) {
     setPage(p);
     setProjectId(null);
+    setResearcherId(null);
     closeNav(false);
     setQ("");
     setStatus("");
@@ -469,7 +476,7 @@ function App() {
               <Search size={18} />
               <input
                 aria-label="Search research"
-                placeholder="Title, project number or researcher"
+                placeholder="Search by title, project ID, or researcher"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
@@ -490,7 +497,7 @@ function App() {
           </select>
         </label>
         <label className="filter-field">
-          <span>College department</span>
+          <span>Department</span>
           <select
             aria-label="Department"
             value={department}
@@ -530,7 +537,7 @@ function App() {
               setStatus("");
             }}
           >
-            Show all projects
+            Show All Projects
           </button>
         )}
         <p className="filters-help">
@@ -559,7 +566,7 @@ function App() {
           <thead>
             <tr>
               <th>Research project</th>
-              {!compact && <th>Researcher / Department</th>}
+              {!compact && <th>Researcher and department</th>}
               <th>Current stage</th>
               <th>Progress</th>
               <th>Status</th>
@@ -581,7 +588,7 @@ function App() {
                       className={"type-dot type-" + data.types.indexOf(p.type)}
                     />
                     {p.type}
-                    <span className="muted"> · Project number: {p.id}</span>
+                    <span className="muted"> · Project ID: {p.id}</span>
                   </div>
                 </td>
                 {!compact && (
@@ -596,11 +603,7 @@ function App() {
                 <td>
                   <span className="phase-label">
                     <span className="phase-num">{p.phase + 1}</span>
-                    {checklist[p.phase]?.name
-                      .replace(/^(I+\.|IV\.)\s*/, "")
-                      .replace(" PHASE", "")
-                      .replace("Phase", "")
-                      .toLowerCase()}
+                    {phaseLabel(checklist[p.phase]?.name)}
                   </span>
                 </td>
                 <td>
@@ -612,10 +615,10 @@ function App() {
                 <td>
                   <button
                     className="button small secondary"
-                    aria-label={"View project: " + p.title}
+                    aria-label={"View Project: " + p.title}
                     onClick={() => openProject(p.id)}
                   >
-                    View project <ChevronRight size={17} />
+                    View Project <ChevronRight size={17} />
                   </button>
                 </td>
               </tr>
@@ -626,7 +629,7 @@ function App() {
     ) : (
       <Empty
         title="No matching research"
-        text="Try clearing filters or submit a new project."
+        text="Clear the filters or add a new research project."
       />
     );
   }
@@ -641,7 +644,7 @@ function App() {
     });
     window.location.href = "/api/reports.csv?" + params;
     setToast(
-      "Your spreadsheet download has been requested using the choices shown on this page.",
+      "CSV download requested. Check your browser's downloads for the exported report.",
     );
   }
   function renderOverview() {
@@ -663,12 +666,12 @@ function App() {
         {header(
           "Overview",
           isResearcher
-            ? "Your studies, requirements, and next steps in one place."
+            ? "Your projects, requirements, and next steps in one place."
             : "A clear view of research, from proposal to impact.",
           <>
             <button className="button secondary" onClick={exportCsv}>
               <Download size={16} />
-              Export report
+              Export Report
             </button>
             <button
               className="button"
@@ -679,9 +682,7 @@ function App() {
               }
             >
               {isResearcher ? <Plus size={16} /> : <FolderKanban size={16} />}{" "}
-              {isResearcher
-                ? "Add a research project"
-                : "View research projects"}
+              {isResearcher ? "Add Research Project" : "View Research Projects"}
             </button>
           </>,
         )}
@@ -689,15 +690,15 @@ function App() {
         <div className="metrics">
           {[
             [
-              "Total research",
+              "Total Research",
               filtered.length,
               "Projects you can access",
               FolderKanban,
             ],
             [
-              "In progress",
+              "In Progress",
               active.length,
-              "Studies that are not yet complete",
+              "Projects that are not yet complete",
               Activity,
             ],
             [
@@ -707,7 +708,7 @@ function App() {
               CheckCircle2,
             ],
             [
-              "Awaiting review",
+              "Waiting for Review",
               reviews.length,
               "Documents requiring attention",
               Clock,
@@ -736,12 +737,12 @@ function App() {
         <div className="overview-grid">
           <section className="panel focus-panel">
             <div className="section-heading">
-              <h2>Research in focus</h2>
+              <h2>Research in Focus</h2>
               <button
                 className="text-button"
                 onClick={() => go("Research projects")}
               >
-                View all <ArrowRight size={14} />
+                View All <ArrowRight size={14} />
               </button>
             </div>
             {filtered
@@ -776,10 +777,7 @@ function App() {
                         className={i <= p.phase ? "reached" : ""}
                       >
                         <i />
-                        {phase.name
-                          .replace(/^(I+\.|IV\.)\s*/, "")
-                          .replace(" PHASE", "")
-                          .toLowerCase()}
+                        {phaseLabel(phase.name)}
                       </span>
                     ))}
                   </div>
@@ -789,11 +787,11 @@ function App() {
           </section>
           <section className="panel">
             <div className="section-heading">
-              <h2>Research by department</h2>
+              <h2>Research by Department</h2>
               <Building2 size={17} className="muted" />
             </div>
             <p className="panel-description">
-              Select a department to see its research projects
+              Select a department to see its research projects.
             </p>
             <div className="department-chart">
               {byDept.map(({ name, n }) => (
@@ -833,31 +831,31 @@ function App() {
           </section>
           <section className="panel">
             <div className="section-heading">
-              <h2>What needs attention</h2>
+              <h2>What Needs Attention</h2>
               <button
                 className="text-button"
                 onClick={() => go("Pending actions")}
               >
-                View things to do <ArrowRight size={14} />
+                View Things to Do <ArrowRight size={14} />
               </button>
             </div>
             {[
               [
                 pendingDocs.length,
-                "Documents awaiting evaluation",
+                "Documents Waiting for Review",
                 "Review & approvals",
                 "amber",
               ],
               [
                 revisionDocs.length,
-                "Documents returned for correction",
+                "Documents Needing Changes",
                 "Document submissions",
                 "red",
               ],
               [
                 projects.filter((p) => p.status === "Ongoing" && ready(p))
                   .length,
-                "Projects ready for the next stage",
+                "Projects Ready for the Next Stage",
                 "Pending actions",
                 "teal",
               ],
@@ -865,7 +863,7 @@ function App() {
                 ? [
                     [
                       data.users.filter((u) => u.status === "Pending").length,
-                      "Accounts awaiting approval",
+                      "Accounts Waiting for Approval",
                       "User management",
                       "blue",
                     ],
@@ -885,12 +883,12 @@ function App() {
           </section>
           <section className="panel">
             <div className="section-heading">
-              <h2>From the research unit</h2>
+              <h2>From the Research Unit</h2>
               <button
                 className="text-button"
                 onClick={() => go("News & announcements")}
               >
-                All updates <ArrowRight size={14} />
+                View All Updates <ArrowRight size={14} />
               </button>
             </div>
             {data.announcements
@@ -915,7 +913,7 @@ function App() {
         </div>
         <div className="data-caption">
           <span className="live-dot" />
-          These numbers use the records you can access{" "}
+          These totals include only records you can access.{" "}
           <span>Example data · {projects.length} projects you can access</span>
         </div>
       </>
@@ -926,13 +924,13 @@ function App() {
       <>
         {header(
           "Research projects",
-          "Find a study, check its progress, or open its list of required documents.",
+          "Find a research project, check its progress, or open its required documents.",
           <button
             className="button"
             onClick={() => setModal({ kind: "project" })}
           >
             <Plus size={16} />
-            Add a research project
+            Add Research Project
           </button>,
         )}
         {filterBar()}
@@ -942,7 +940,7 @@ function App() {
             aria-pressed={!status}
             onClick={() => setStatus("")}
           >
-            All projects <span>{projects.length}</span>
+            All Projects <span>{projects.length}</span>
           </button>
           {["Ongoing", "Completed", "Archived"].map((s) => (
             <button
@@ -951,7 +949,7 @@ function App() {
               aria-pressed={status === s}
               onClick={() => setStatus(s)}
             >
-              {statusLabel(s)}
+              {statusTitle(s)}
               <span>{projects.filter((p) => p.status === s).length}</span>
             </button>
           ))}
@@ -959,7 +957,9 @@ function App() {
         <section className="panel table-panel">{projectTable()}</section>
         <div className="data-caption">
           {filtered.length} projects shown{" "}
-          <span>All five categories supported in submissions and reports</span>
+          <span>
+            All five research types are available in submissions and reports.
+          </span>
         </div>
       </>
     );
@@ -971,7 +971,9 @@ function App() {
     return (
       <>
         <button className="back-link" onClick={() => setProjectId(null)}>
-          Back to {(pageLabels[page] || page).toLowerCase()}
+          {researcherId
+            ? "Back to Researcher Profile"
+            : "Back to " + (pageLabels[page] || page)}
         </button>
         {header(
           project.title,
@@ -1052,11 +1054,11 @@ function App() {
               onClick={() => setTab(t)}
             >
               {t === "Checklist"
-                ? "Required documents"
+                ? "Required Documents"
                 : t === "Activity"
-                  ? "Project history"
+                  ? "Project History"
                   : t === "Overview"
-                    ? "Project details"
+                    ? "Project Details"
                     : t}
               {t === "Documents" && <span>{docs.length}</span>}
             </button>
@@ -1066,7 +1068,7 @@ function App() {
           <>
             <div className="section-heading checklist-heading">
               <div>
-                <h2>{phaseObj?.name}</h2>
+                <h2>{phaseHeading(phaseObj?.name)}</h2>
                 <p className="muted">
                   Upload each required PDF, then wait for your Department Head
                   to review it. A submitted document is not yet approved.
@@ -1125,7 +1127,7 @@ function App() {
                         <b>{item.label}</b>
                         {item.conditional && req.status === "Missing" && (
                           <small className="status-help">
-                            If this does not apply to your study, ask your
+                            If this does not apply to your project, ask your
                             Department Head to mark it as not needed.
                           </small>
                         )}
@@ -1154,7 +1156,7 @@ function App() {
                             }
                           >
                             <Search size={16} />
-                            View document
+                            View Document
                           </button>
                         )}
                         {current === project.phase &&
@@ -1177,8 +1179,8 @@ function App() {
                                   >
                                     <Upload size={14} />
                                     {latest
-                                      ? "Upload a new version"
-                                      : "Upload document"}
+                                      ? "Upload New Version"
+                                      : "Upload Document"}
                                   </button>
                                 )}
                               {isHead &&
@@ -1192,7 +1194,7 @@ function App() {
                                       })
                                     }
                                   >
-                                    Review document
+                                    Review Document
                                   </button>
                                 )}
                               {isHead &&
@@ -1211,8 +1213,8 @@ function App() {
                                     }
                                   >
                                     {req.status === "Not Applicable"
-                                      ? "Require this document"
-                                      : "Mark as not needed"}
+                                      ? "Require Document"
+                                      : "Mark as Not Needed"}
                                   </button>
                                 )}
                             </>
@@ -1227,10 +1229,10 @@ function App() {
               <div>
                 <h3>
                   {project.status !== "Ongoing"
-                    ? "This research is complete"
+                    ? "Research Complete"
                     : ready(project)
-                      ? "Ready for the next step"
-                      : "What needs to happen before continuing"}
+                      ? "Ready for the Next Stage"
+                      : "Before You Continue"}
                 </h3>
                 <p>
                   {project.status !== "Ongoing"
@@ -1247,8 +1249,8 @@ function App() {
                   onClick={() => setModal({ kind: "advance", project })}
                 >
                   {project.phase === 2
-                    ? "Complete research"
-                    : "Approve the next stage"}
+                    ? "Complete Research"
+                    : "Approve Next Stage"}
                   <ArrowRight size={16} />
                 </button>
               )}
@@ -1256,7 +1258,7 @@ function App() {
             <section className="monitoring-note">
               <Activity size={22} />
               <div>
-                <h3>IV. MONITORING AND EVALUATION</h3>
+                <h3>IV. Monitoring and Evaluation</h3>
                 <p>
                   <b>A. Monitoring</b> — Monitoring covers the whole process of
                   the research project.
@@ -1270,7 +1272,7 @@ function App() {
                   className="text-button"
                   onClick={() => setTab("Activity")}
                 >
-                  View monitoring and decision history <ArrowRight size={14} />
+                  View Monitoring and Decision History <ArrowRight size={14} />
                 </button>
               </div>
             </section>
@@ -1283,13 +1285,13 @@ function App() {
           )}
         {tab === "Overview" && (
           <section className="panel prose">
-            <h2>Research summary</h2>
+            <h2>Research Summary</h2>
             <p>{project.abstract}</p>
             <dl>
               <dt>Project type</dt>
               <dd>{project.type}</dd>
               <dt>Academic program</dt>
-              <dd>{project.program || "Not specified"}</dd>
+              <dd>{project.program || "Not recorded"}</dd>
               <dt>Created</dt>
               <dd>{date(project.createdAt)}</dd>
               <dt>Progress</dt>
@@ -1303,7 +1305,7 @@ function App() {
                 onClick={() => setModal({ kind: "archive", project })}
               >
                 <Archive size={16} />
-                Archive completed research
+                Archive Completed Research
               </button>
             )}
           </section>
@@ -1424,14 +1426,14 @@ function App() {
       <>
         {header(
           "Pending actions",
-          "Actionable tasks, separate from informative notifications.",
+          "Review documents, correct submissions, and complete pending approvals.",
         )}
         <div className="action-sections">
           <section className="panel">
             <h2>
               {isResearcher
-                ? "Documents to correct"
-                : "Documents awaiting review"}
+                ? "Documents Needing Changes"
+                : "Documents Waiting for Review"}
             </h2>
             {(isResearcher ? revisionDocs : pendingDocs).length ? (
               (isResearcher ? revisionDocs : pendingDocs).map((d) => (
@@ -1452,7 +1454,7 @@ function App() {
                         : openProject(d.projectId)
                     }
                   >
-                    {isHead ? "Review" : "Open project"}
+                    {isHead ? "Review" : "Open Project"}
                     <ArrowRight size={14} />
                   </button>
                 </div>
@@ -1465,7 +1467,7 @@ function App() {
             )}
           </section>
           <section className="panel">
-            <h2>Ready for the next stage</h2>
+            <h2>Ready for the Next Stage</h2>
             {readyProjects.length ? (
               readyProjects.map((p) => (
                 <div className="action-item" key={p.id}>
@@ -1480,7 +1482,7 @@ function App() {
                     className="button small secondary"
                     onClick={() => openProject(p.id)}
                   >
-                    Open checklist
+                    Open Checklist
                   </button>
                 </div>
               ))
@@ -1493,7 +1495,7 @@ function App() {
           </section>
           {isAdmin && (
             <section className="panel">
-              <h2>Account approvals</h2>
+              <h2>Account Approvals</h2>
               {data.users
                 .filter((u) => u.status === "Pending")
                 .map((u) => (
@@ -1510,7 +1512,7 @@ function App() {
                         setModal({ kind: "user", record: u });
                       }}
                     >
-                      Review account
+                      Review Account
                     </button>
                   </div>
                 ))}
@@ -1534,18 +1536,18 @@ function App() {
       <>
         {header(
           "Notifications",
-          "Research updates delivered only to your account.",
+          "Research updates sent to your account.",
           <button
             className="button secondary"
             onClick={() =>
               run(
                 () => api("/notifications/read", "POST", { id: "all" }),
-                "All notifications marked as read.",
+                "All messages marked as read.",
               )
             }
           >
             <Check size={16} />
-            Mark all as read
+            Mark All as Read
           </button>,
         )}
         <div className="filters">
@@ -1557,14 +1559,14 @@ function App() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search messages"
-                aria-label="Search notifications"
+                aria-label="Search messages"
               />
             </div>
           </label>
           <label className="filter-field">
             <span>Messages to show</span>
             <select
-              aria-label="Notification filter"
+              aria-label="Message filter"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
@@ -1627,7 +1629,7 @@ function App() {
     return (
       <>
         {header(
-          faculty ? "Faculty members" : "User management",
+          faculty ? "Faculty Members" : "User management",
           faculty
             ? "Find a faculty member and see their research projects."
             : "Approve accounts and choose what each person can do and which department they belong to.",
@@ -1637,7 +1639,7 @@ function App() {
               onClick={() => setModal({ kind: "user" })}
             >
               <Plus size={16} />
-              Add account
+              Add Account
             </button>
           ),
         )}
@@ -1649,15 +1651,15 @@ function App() {
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Name, email or department"
-                aria-label="Search faculty or users"
+                placeholder="Search by name, email, or department"
+                aria-label="Search faculty or accounts"
               />
             </div>
           </label>
         </div>
         <section className="panel table-panel">
           <div className="table-wrap">
-            <RecordTable label={faculty ? "Faculty members" : "User accounts"}>
+            <RecordTable label={faculty ? "Faculty members" : "Accounts"}>
               <thead>
                 <tr>
                   <th>Name and email</th>
@@ -1692,14 +1694,14 @@ function App() {
                     <td>
                       <button
                         className="button small secondary"
-                        onClick={() =>
-                          setModal({
-                            kind: faculty ? "faculty" : "user",
-                            record: u,
-                          })
-                        }
+                        onClick={() => {
+                          if (faculty) {
+                            setProjectId(null);
+                            setResearcherId(u.id);
+                          } else setModal({ kind: "user", record: u });
+                        }}
                       >
-                        {faculty ? "View profile" : "Manage account"}
+                        {faculty ? "View Profile" : "Manage Account"}
                       </button>
                     </td>
                   </tr>
@@ -1710,6 +1712,169 @@ function App() {
           {!list.length && <Empty title="No matching people" />}
         </section>
       </>
+    );
+  }
+  function researcherProfile() {
+    const person = data.users.find(
+      (u) => u.id === researcherId && u.role === "Researcher",
+    );
+    const back = (
+      <button className="back-link" onClick={() => setResearcherId(null)}>
+        <ArrowRight size={18} className="profile-back-icon" />
+        Back to Faculty Members
+      </button>
+    );
+    if (!person)
+      return (
+        <>
+          {back}
+          {header(
+            "Profile Unavailable",
+            "This researcher is not available to your current account.",
+          )}
+        </>
+      );
+    const research = projects.filter((p) => p.ownerId === person.id);
+    const ongoing = research.filter((p) => p.status === "Ongoing").length;
+    const completed = research.filter((p) => p.status === "Completed").length;
+    const archived = research.filter((p) => p.status === "Archived").length;
+    return (
+      <div className="researcher-profile">
+        {back}
+        <div className="researcher-cover" aria-hidden="true">
+          Research and Development Unit
+        </div>
+        <section
+          className="researcher-identity"
+          aria-label="Researcher identity"
+        >
+          <div className="researcher-identity-row">
+            <span className="researcher-avatar" aria-hidden="true">
+              {initials(person.name)}
+            </span>
+            <div className="researcher-name">
+              <h1 className="page-title-focus" tabIndex={-1}>
+                {person.name}
+              </h1>
+              <p>
+                {person.role} · {person.department || "Department not assigned"}
+              </p>
+            </div>
+            {person.email && (
+              <a className="button" href={"mailto:" + person.email}>
+                Email Researcher <ArrowUpRight size={17} />
+              </a>
+            )}
+          </div>
+          <ul
+            className="researcher-summary"
+            aria-label="Visible research totals"
+          >
+            <li>
+              <strong>{research.length}</strong> research projects
+            </li>
+            <li>
+              <strong>{ongoing}</strong> in progress
+            </li>
+            <li>
+              <strong>{completed}</strong> completed
+            </li>
+            {archived > 0 && (
+              <li>
+                <strong>{archived}</strong> archived
+              </li>
+            )}
+          </ul>
+        </section>
+        <div className="researcher-columns">
+          <aside
+            className="researcher-about"
+            aria-labelledby="researcher-about-heading"
+          >
+            <h2 id="researcher-about-heading">About</h2>
+            <dl>
+              <dt>Department</dt>
+              <dd>{person.department || "Not assigned"}</dd>
+              <dt>Email</dt>
+              <dd>
+                {person.email ? (
+                  <a href={"mailto:" + person.email}>{person.email}</a>
+                ) : (
+                  "Not recorded"
+                )}
+              </dd>
+              <dt>Role</dt>
+              <dd>{person.role}</dd>
+              <dt>Account status</dt>
+              <dd>
+                <Badge>{person.status || "Not recorded"}</Badge>
+              </dd>
+            </dl>
+            <p className="researcher-note">
+              Only recorded profile information is shown. No photo or biography
+              has been supplied.
+            </p>
+          </aside>
+          <section
+            className="researcher-projects"
+            aria-labelledby="researcher-projects-heading"
+          >
+            <div className="researcher-section-heading">
+              <h2 id="researcher-projects-heading">Research Projects</h2>
+              <p>{research.length} visible to your account</p>
+            </div>
+            {research.length ? (
+              research.map((p) => (
+                <article
+                  className="researcher-project"
+                  key={p.id}
+                  aria-labelledby={"profile-project-" + p.id}
+                >
+                  <div className="researcher-project-heading">
+                    <h3 id={"profile-project-" + p.id}>{p.title}</h3>
+                    <Badge>{p.status}</Badge>
+                  </div>
+                  <p className="researcher-project-type">
+                    {p.type || "Research type not recorded"}
+                  </p>
+                  <dl className="researcher-project-meta">
+                    <div>
+                      <dt>Academic year</dt>
+                      <dd>{p.year ?? "Not recorded"}</dd>
+                    </div>
+                    <div>
+                      <dt>Program</dt>
+                      <dd>{p.program || "Not recorded"}</dd>
+                    </div>
+                  </dl>
+                  <p className="researcher-abstract">
+                    {p.abstract || "No abstract recorded for this research."}
+                  </p>
+                  <div className="researcher-project-footer">
+                    <span>
+                      {checklist[p.phase]
+                        ? phaseLabel(checklist[p.phase].name)
+                        : "Stage not recorded"}
+                    </span>
+                    <button
+                      className="text-button"
+                      aria-label={"View Research: " + p.title}
+                      onClick={() => openProject(p.id)}
+                    >
+                      View Research <ArrowRight size={17} />
+                    </button>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <Empty
+                title="No research projects yet"
+                text="No research projects for this researcher are available to your current account."
+              />
+            )}
+          </section>
+        </div>
+      </div>
     );
   }
   function reportsPage() {
@@ -1743,7 +1908,7 @@ function App() {
             </button>
             <button className="button" onClick={exportCsv}>
               <Download size={16} />
-              Download spreadsheet (CSV)
+              Download CSV
             </button>
           </>,
         )}
@@ -1799,7 +1964,15 @@ function App() {
                   {result.rows.map((row, i) => (
                     <tr key={i}>
                       {row.map((value, j) => (
-                        <td key={j}>{statusLabel(String(value ?? "—"))}</td>
+                        <td key={j}>
+                          {result.columns[j] === "Status"
+                            ? statusLabel(String(value ?? "—"))
+                            : ["Stage", "Current stage"].includes(
+                                  result.columns[j],
+                                )
+                              ? phaseHeading(String(value ?? "—"))
+                              : String(value ?? "—")}
+                        </td>
                       ))}
                     </tr>
                   ))}
@@ -1828,7 +2001,7 @@ function App() {
               onClick={() => setModal({ kind: "announcement" })}
             >
               <Plus size={16} />
-              Create announcement
+              Create Announcement
             </button>
           ),
         )}
@@ -1859,7 +2032,7 @@ function App() {
                     setModal({ kind: "announcement-view", record: a })
                   }
                 >
-                  Read announcement <ArrowRight size={14} />
+                  Read Announcement <ArrowRight size={14} />
                 </button>
                 {isPublisher && (
                   <button
@@ -1868,7 +2041,7 @@ function App() {
                       setModal({ kind: "announcement", record: a })
                     }
                   >
-                    Edit announcement
+                    Edit Announcement
                   </button>
                 )}
               </div>
@@ -1890,7 +2063,7 @@ function App() {
           <div className="assistant-mark">
             <Sparkles size={29} />
           </div>
-          <h2>A little clarity for your next step.</h2>
+          <h2>Plan Your Next Step</h2>
           <p>
             Find research, understand progress, and identify missing
             requirements.
@@ -1924,7 +2097,7 @@ function App() {
           >
             <input
               aria-label="Question for research assistant"
-              placeholder="Ask a research status question…"
+              placeholder="Ask about a project or its requirements"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               required
@@ -1935,7 +2108,7 @@ function App() {
           </form>
           {answer && (
             <div className="assistant-answer">
-              <h3>Your research summary</h3>
+              <h3>Your Research Summary</h3>
               <p>{answer}</p>
             </div>
           )}
@@ -1983,7 +2156,7 @@ function App() {
                     "Own department",
                     "Own projects",
                   ],
-                  ["Manage accounts / security", "Yes", "No", "No", "No"],
+                  ["Manage accounts and security", "Yes", "No", "No", "No"],
                   [
                     "Review documents and approve the next stage",
                     "No",
@@ -2044,11 +2217,11 @@ function App() {
           "Change the institution name and see which services are ready to use.",
         )}
         <section className="panel settings-panel">
-          <h2>Institution identity</h2>
+          <h2>Institution Identity</h2>
           <SafeForm
             busy={busy}
             context="Institution name"
-            confirmLabel="Confirm and save settings"
+            confirmLabel="Confirm and Save Settings"
             onSubmit={async (e) => {
               e.preventDefault();
               const f = new FormData(e.currentTarget);
@@ -2072,12 +2245,12 @@ function App() {
               />
             </Field>
             <button className="button" disabled={busy}>
-              Review changes
+              Review Changes
             </button>
           </SafeForm>
         </section>
         <section className="panel settings-panel">
-          <h2>Connected services and missing information</h2>
+          <h2>Services and Setup</h2>
           {[
             [
               "Google Single Sign-On",
@@ -2085,22 +2258,22 @@ function App() {
               "Google sign-in is not connected. The account picker is for practice only, not secure sign-in.",
             ],
             [
-              "Email delivery",
+              "Email Delivery",
               "Not configured",
               "Messages appear inside the system, but no emails are being sent. An email service must be connected before this can work.",
             ],
             [
-              "Official BukSU / RDU branding",
-              "Assets required",
-              "The current appearance is temporary. Approved university colors and logos have not been provided.",
+              "BukSU / RDU Branding",
+              "Approval unverified",
+              "The supplied logo and selected theme have not been verified as institutionally approved branding.",
             ],
             [
-              "Personally funded checklist",
+              "Personally Funded Checklist",
               "Provisional",
               "Personally funded projects temporarily use the standard checklist. The separate official checklist has not been supplied.",
             ],
             [
-              "Database and document storage",
+              "Database and Document Storage",
               "Saved on this computer",
               "Research records and PDFs are saved together on this computer. Keep a complete backup before moving or resetting the system.",
             ],
@@ -2115,9 +2288,9 @@ function App() {
           ))}
         </section>
         <section className="panel settings-panel">
-          <h2>Academic directory</h2>
+          <h2>Academic Directory</h2>
           <p className="muted">
-            Departments and programs supplied to research forms.
+            Departments and programs available in research forms.
           </p>
           <div className="directory-grid">
             {data.departments.map((d) => (
@@ -2133,6 +2306,7 @@ function App() {
   }
   function renderPage() {
     if (project) return projectDetail();
+    if (page === "Faculty profiles" && researcherId) return researcherProfile();
     switch (page) {
       case "Overview":
         return renderOverview();
@@ -2177,7 +2351,7 @@ function App() {
                     aria-pressed={(status || "Pending Review") === s}
                     onClick={() => setStatus(s)}
                   >
-                    {statusLabel(s)}
+                    {statusTitle(s)}
                     <span>
                       {data.documents.filter((d) => d.status === s).length}
                     </span>
@@ -2243,7 +2417,7 @@ function App() {
     let title = "",
       content;
     if (m.kind === "project") {
-      title = "Add a research project";
+      title = "Add Research Project";
       content = (
         <form
           onSubmit={async (e) => {
@@ -2260,7 +2434,7 @@ function App() {
           }}
         >
           <fieldset className="form-section">
-            <legend>Name your study</legend>
+            <legend>Name Your Project</legend>
             <Field label="Research title">
               <input
                 name="title"
@@ -2272,7 +2446,7 @@ function App() {
           </fieldset>
           <ProjectFields data={data} user={user} />
           <fieldset className="form-section">
-            <legend>Describe your study</legend>
+            <legend>Describe Your Project</legend>
             <Field
               label="Research abstract"
               hint="Briefly explain the problem, your objectives, and how you plan to carry out the research."
@@ -2283,15 +2457,15 @@ function App() {
                 required
                 minLength={20}
                 maxLength={6000}
-                placeholder="Summarize the problem, objectives, and approach."
+                placeholder="Summarize the problem, objectives, and approach"
               />
             </Field>
           </fieldset>
           <div className="notice">
             <AlertCircle size={17} />
             <span>
-              Finish your current study before starting another one. If you
-              already have a study in progress, open that project instead.
+              Complete your current project before starting another one. If you
+              already have a project in progress, open it instead.
             </span>
           </div>
           <div className="form-actions">
@@ -2308,14 +2482,14 @@ function App() {
               Cancel
             </button>
             <button className="button" disabled={busy}>
-              {busy ? "Submitting…" : "Create research project"}
+              {busy ? "Submitting…" : "Create Research Project"}
             </button>
           </div>
         </form>
       );
     }
     if (m.kind === "upload") {
-      title = "Upload a required document";
+      title = "Upload Required Document";
       content = (
         <form
           onSubmit={async (e) => {
@@ -2335,7 +2509,7 @@ function App() {
           <p className="modal-context">{m.project.title}</p>
           <div className="requirement-callout">{m.item.label}</div>
           <fieldset className="form-section">
-            <legend>Choose the document</legend>
+            <legend>Choose the Document</legend>
             <Field
               label="PDF document"
               hint={`Choose a PDF file no larger than ${data.settings.uploadLimit || 10} MB. Wait for a success message before leaving this page.`}
@@ -2349,7 +2523,7 @@ function App() {
             </Field>
           </fieldset>
           <fieldset className="form-section">
-            <legend>Confirm the submission</legend>
+            <legend>Confirm the Submission</legend>
             <Field
               label="Your full name for this submission"
               hint="Type your full name to confirm that you are submitting this document. This practice system records a typed signature, not a certified digital signature."
@@ -2365,7 +2539,7 @@ function App() {
               label={
                 isHead
                   ? "Reason for uploading for the researcher"
-                  : "Version / correction note"
+                  : "Version or correction note"
               }
             >
               <textarea
@@ -2374,8 +2548,8 @@ function App() {
                 rows="3"
                 placeholder={
                   isHead
-                    ? "Explain why you are uploading on behalf of the researcher."
-                    : "Describe corrections or explain this submission."
+                    ? "Explain why you are uploading for the researcher"
+                    : "Describe corrections or explain this submission"
                 }
               />
             </Field>
@@ -2387,7 +2561,7 @@ function App() {
           </div>
           <div className="form-actions">
             <button className="button" disabled={busy}>
-              {busy ? "Uploading…" : "Sign & submit PDF"}
+              {busy ? "Uploading…" : "Sign and Submit PDF"}
               <Upload size={16} />
             </button>
           </div>
@@ -2396,7 +2570,7 @@ function App() {
     }
     if (m.kind === "document") {
       const d = data.documents.find((d) => d.id === m.record.id) || m.record;
-      title = "Document review";
+      title = "Document Review";
       content = (
         <>
           <div className="document-meta">
@@ -2428,9 +2602,9 @@ function App() {
               rel="noreferrer"
             >
               <ArrowUpRight size={15} />
-              Open full PDF
+              Open Full PDF
             </a>
-            <span>Signed: {d.signature || "Seeded demo signature"}</span>
+            <span>Signed: {d.signature || "Example signature"}</span>
           </div>
           {d.reason && <p className="muted">Upload note: {d.reason}</p>}
           {d.feedback && (
@@ -2444,7 +2618,7 @@ function App() {
                 if (
                   await run(
                     () => api("/documents/" + d.id + "/review", "POST", f),
-                    "Signed review recorded and researcher notified.",
+                    "Review saved. The researcher has been notified in the system.",
                   )
                 )
                   setModal(null);
@@ -2485,12 +2659,12 @@ function App() {
                   name="feedback"
                   required={reviewDecision !== "Approved"}
                   rows="3"
-                  placeholder="Explain your evaluation and any required corrections."
+                  placeholder="Explain your evaluation and any required corrections"
                 />
               </Field>
               <div className="form-actions">
                 <button className="button" disabled={busy}>
-                  Sign & record decision
+                  Sign and Record Decision
                   <Check size={16} />
                 </button>
               </div>
@@ -2501,9 +2675,7 @@ function App() {
     }
     if (m.kind === "advance") {
       title =
-        m.project.phase === 2
-          ? "Mark research as complete"
-          : "Approve the next stage";
+        m.project.phase === 2 ? "Complete Research" : "Approve Next Stage";
       content = (
         <form
           onSubmit={async (e) => {
@@ -2542,7 +2714,7 @@ function App() {
           </Field>
           <div className="form-actions">
             <button className="button" disabled={busy}>
-              Confirm authorized transition
+              Confirm Stage Approval
               <ArrowRight size={16} />
             </button>
           </div>
@@ -2551,8 +2723,8 @@ function App() {
     }
     if (m.kind === "applicability") {
       title = m.applicable
-        ? "Require this document again"
-        : "Mark a document as not needed";
+        ? "Require Document Again"
+        : "Mark Document as Not Needed";
       content = (
         <form
           onSubmit={async (e) => {
@@ -2589,9 +2761,7 @@ function App() {
           </div>
           <div className="form-actions">
             <button className="button" disabled={busy}>
-              {m.applicable
-                ? "Restore as required"
-                : "Record as not applicable"}
+              {m.applicable ? "Restore as Required" : "Mark as Not Needed"}
             </button>
           </div>
         </form>
@@ -2599,7 +2769,7 @@ function App() {
     }
     if (m.kind === "user") {
       const u = m.record;
-      title = u ? "Manage account" : "Add account for approval";
+      title = u ? "Manage Account" : "Add Account for Approval";
       content = (
         <form
           onSubmit={async (e) => {
@@ -2613,7 +2783,9 @@ function App() {
                     u ? "PATCH" : "POST",
                     f,
                   ),
-                u ? "Account updated." : "Pending account created.",
+                u
+                  ? "Account changes saved."
+                  : "Account created and waiting for approval.",
               )
             )
               setModal(null);
@@ -2677,64 +2849,21 @@ function App() {
             </Field>
           )}
           <div className="notice">
-            Only Active accounts can sign in. Check the role and department
+            Only active accounts can sign in. Check the role and department
             carefully: they control what this person can see and do. Every
             change is recorded.
           </div>
           <div className="form-actions">
             <button className="button" disabled={busy}>
-              {u ? "Save account decision" : "Create pending account"}
+              {u ? "Save Account Changes" : "Create Pending Account"}
             </button>
           </div>
         </form>
       );
     }
-    if (m.kind === "faculty") {
-      const u = m.record;
-      title = "Faculty research profile";
-      content = (
-        <>
-          <div className="profile-banner">
-            <span className="avatar large">{initials(u.name)}</span>
-            <div>
-              <h2>{u.name}</h2>
-              <p>{u.department}</p>
-              <a href={"mailto:" + u.email}>{u.email}</a>
-            </div>
-          </div>
-          <h3>Research participation</h3>
-          {projects
-            .filter((p) => p.ownerId === u.id)
-            .map((p) => (
-              <button
-                className="profile-project"
-                key={p.id}
-                onClick={() => {
-                  setModal(null);
-                  openProject(p.id);
-                }}
-              >
-                <span>
-                  <b>{p.title}</b>
-                  <small>{p.type}</small>
-                </span>
-                <Badge>{p.status}</Badge>
-                <ChevronRight size={16} />
-              </button>
-            ))}
-          {!projects.some((p) => p.ownerId === u.id) && (
-            <Empty title="No research projects yet" />
-          )}
-          <div className="notice">
-            Profile contact information is limited to supplied demo records; no
-            personal phone or social account is fabricated.
-          </div>
-        </>
-      );
-    }
     if (m.kind === "announcement") {
       const a = m.record;
-      title = a ? "Edit announcement" : "Create announcement";
+      title = a ? "Edit Announcement" : "Create Announcement";
       content = (
         <form
           onSubmit={async (e) => {
@@ -2817,14 +2946,14 @@ function App() {
           </div>
           <div className="form-actions">
             <button className="button" disabled={busy}>
-              Save announcement
+              Save Announcement
             </button>
           </div>
         </form>
       );
     }
     if (m.kind === "archive") {
-      title = "Archive completed research";
+      title = "Archive Completed Research";
       content = (
         <form
           onSubmit={async (e) => {
@@ -2846,7 +2975,7 @@ function App() {
           </div>
           <div className="form-actions">
             <button className="button" disabled={busy}>
-              Review archive action
+              Review Archive Action
             </button>
           </div>
         </form>
@@ -2872,17 +3001,17 @@ function App() {
       );
     }
     const confirmationLabels = {
-      project: "Confirm and create project",
-      upload: "Confirm and submit document",
-      document: "Confirm and save decision",
+      project: "Confirm and Create Project",
+      upload: "Confirm and Submit Document",
+      document: "Confirm and Save Decision",
       advance:
         m.project?.phase === 2
-          ? "Confirm research is complete"
-          : "Confirm the next stage",
-      applicability: "Confirm requirement change",
-      user: m.record ? "Confirm account changes" : "Confirm and add account",
-      announcement: "Confirm and save announcement",
-      archive: "Confirm and archive project",
+          ? "Confirm Research Completion"
+          : "Confirm Next Stage",
+      applicability: "Confirm Requirement Change",
+      user: m.record ? "Confirm Account Changes" : "Confirm and Add Account",
+      announcement: "Confirm and Save Announcement",
+      archive: "Confirm and Archive Project",
     };
     return (
       <ModalFrame
@@ -2926,7 +3055,7 @@ function App() {
               ? (f) =>
                   f.get("decision") !== "Approved" &&
                   !String(f.get("feedback") || "").trim()
-                    ? "Explain the changes needed in Review feedback before continuing."
+                    ? "Enter the required corrections in the review feedback field before continuing."
                     : null
               : undefined
           }
@@ -2945,7 +3074,7 @@ function App() {
           <>
             <p role="alert">{friendlyError(error)}</p>
             <button className="button" onClick={() => window.location.reload()}>
-              Try loading again
+              Try Again
             </button>
           </>
         )}
@@ -2955,31 +3084,12 @@ function App() {
     return (
       <div className="login-page">
         <section className="login-story">
-          <div className="brand">
-            <span className="brand-icon">
-              <FolderKanban size={24} />
-            </span>
-            <b>
-              RDMS<span>.</span>
-            </b>
-          </div>
           <div>
-            <h1>
-              Research moves forward.
-              <br />
-              Nothing gets left behind.
-            </h1>
+            <h1>Bukidnon State University - Research and Development Unit</h1>
             <p>
               One workspace for every proposal, documentary requirement, review,
               and research milestone.
             </p>
-            <div className="login-phases">
-              <span>Conceptualization</span>
-              <ArrowRight size={18} />
-              <span>Development</span>
-              <ArrowRight size={18} />
-              <span>Implementation</span>
-            </div>
           </div>
           <small>
             Research and Development Management System
@@ -2989,7 +3099,7 @@ function App() {
         </section>
         <section className="login-form">
           <div className="login-inner">
-            <h2>Welcome to your research workspace</h2>
+            <h2>Welcome to Your Research Workspace</h2>
             <p>Choose a practice account to explore what each role can do.</p>
             <div className="notice">
               <AlertCircle size={17} />
@@ -3000,7 +3110,7 @@ function App() {
             </div>
             {error && (
               <div className="error-message" role="alert">
-                {error}
+                {friendlyError(error)}
               </div>
             )}
             <Field
@@ -3027,7 +3137,7 @@ function App() {
               disabled={busy}
               onClick={() => login(document.getElementById("demo-user").value)}
             >
-              {busy ? "Opening your workspace…" : "Open practice workspace"}
+              {busy ? "Opening your workspace…" : "Open Practice Workspace"}
               <ArrowRight size={17} />
             </button>
             <div className="login-integration">
@@ -3056,7 +3166,7 @@ function App() {
         href="#main-content"
         inert={Boolean(modal) || (smallScreen && mobile)}
       >
-        Skip to main content
+        Skip to Main Content
       </a>
       {mobile && <div className="nav-overlay" onClick={closeNav} />}
       <aside
@@ -3065,12 +3175,8 @@ function App() {
         aria-hidden={modal || (smallScreen && !mobile) ? true : undefined}
       >
         <button className="brand" onClick={() => go("Overview")}>
-          <span className="brand-icon">
-            <FolderKanban size={22} />
-          </span>
-          <b>
-            RDMS<span>.</span>
-          </b>
+          <img className="brand-logo" src={rduLogo} alt="RDU logo" />
+          <b>RDMS</b>
         </button>
         <div className="brand-description">
           Research and Development
@@ -3080,7 +3186,7 @@ function App() {
         {smallScreen && (
           <button className="button secondary nav-close" onClick={closeNav}>
             <X size={20} />
-            Close menu
+            Close Menu
           </button>
         )}
         <nav aria-label="Main navigation">
@@ -3124,7 +3230,7 @@ function App() {
           <div className="breadcrumb">
             <button
               className="button secondary mobile-menu"
-              aria-label="Open menu"
+              aria-label="Open Menu"
               aria-expanded={mobile}
               onClick={() => setMobile(true)}
             >
@@ -3137,7 +3243,13 @@ function App() {
             {(project || page !== "Overview") && (
               <>
                 <ChevronRight size={14} />
-                <b>{project ? "Project details" : pageLabels[page] || page}</b>
+                <b>
+                  {project
+                    ? "Project Details"
+                    : researcherId
+                      ? "Researcher Profile"
+                      : pageLabels[page] || page}
+                </b>
               </>
             )}
           </div>
@@ -3162,12 +3274,14 @@ function App() {
             <button
               className="button secondary"
               title="Switch practice account"
-              aria-label="Switch account"
+              aria-label="Switch Account"
               disabled={busy}
               onClick={async () => {
                 try {
                   await api("/session", "DELETE");
                   setData(null);
+                  setResearcherId(null);
+                  setProjectId(null);
                   setSession(await api("/session"));
                   setError("");
                   setAnswer("");
@@ -3181,7 +3295,7 @@ function App() {
               }}
             >
               <LogOut size={17} />
-              Switch account
+              Switch Account
             </button>
           </div>
         </header>
@@ -3189,7 +3303,7 @@ function App() {
           {error && !modal && (
             <div className="error-message" role="alert">
               <AlertCircle size={18} />
-              {error}
+              {friendlyError(error)}
               <button
                 className="button small secondary"
                 onClick={() => setError("")}
@@ -3224,19 +3338,29 @@ function App() {
                     }
                   }}
                 >
-                  Refresh records
+                  Refresh Records
                 </button>
               </div>
             </div>
           )}
-          {renderPage()}
-          <footer className="page-footer">
-            <span>RDMS · Research and Development Management System</span>
-            <span>
-              Practice system · Google sign-in and email are not connected
-            </span>
-          </footer>
+          <ViewMotion
+            motionKey={JSON.stringify([
+              page,
+              projectId,
+              researcherId,
+              tab,
+              phase,
+            ])}
+          >
+            {renderPage()}
+          </ViewMotion>
         </main>
+        <footer className="page-footer">
+          <span>RDMS · Research and Development Management System</span>
+          <span>
+            Practice system · Google sign-in and email are not connected
+          </span>
+        </footer>
       </div>
       {renderModal()}
       {toast && (
@@ -3250,7 +3374,7 @@ function App() {
           <button
             className="button small secondary"
             onClick={() => setToast("")}
-            aria-label="Dismiss notification"
+            aria-label="Dismiss confirmation"
           >
             <X size={15} />
             Dismiss

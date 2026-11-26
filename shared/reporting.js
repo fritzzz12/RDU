@@ -38,9 +38,9 @@ export function buildReport(
     "Department",
     "Program",
     "Year",
-    "Phase",
+    "Stage",
     "Status",
-    "Synthetic",
+    "Example data",
   ];
   const inventory = (list) => ({
     columns: summaryColumns,
@@ -70,9 +70,9 @@ export function buildReport(
         "Type",
         "Department",
         "Year",
-        "Current phase",
+        "Current stage",
         "Approved / applicable requirements",
-        "Phase readiness",
+        "Stage readiness",
       ],
       rows: projects.map((p) => {
         const [n, total] = counts(p);
@@ -84,7 +84,7 @@ export function buildReport(
           p.year,
           phase(p),
           `${n} / ${total}`,
-          n === total ? "Ready for advancement" : "Requirements outstanding",
+          n === total ? "Ready for next stage" : "Requirements incomplete",
         ];
       }),
     };
@@ -129,7 +129,7 @@ export function buildReport(
         "Research title",
         "Type",
         "Department",
-        "Phase",
+        "Stage",
         "Requirement",
         "Status",
         "Feedback",
@@ -156,11 +156,11 @@ export function buildReport(
         "Research title",
         "Type",
         "Department",
-        "Phase",
+        "Stage",
         "Approved",
-        "Not applicable",
-        "Pending review",
-        "Needs revision / rejected",
+        "Not needed",
+        "Waiting for review",
+        "Changes needed / not accepted",
         "Missing",
         "Compliance",
       ],
@@ -187,7 +187,7 @@ export function buildReport(
       columns: [
         "Department",
         "Total research",
-        "Ongoing",
+        "In progress",
         "Completed",
         "Archived",
         "Completion rate",
@@ -213,7 +213,7 @@ export function buildReport(
         "Academic year",
         "Research type",
         "Projects",
-        "Ongoing",
+        "In progress",
         "Completed / archived",
       ],
       rows: [
